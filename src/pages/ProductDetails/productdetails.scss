@@ -1,0 +1,436 @@
+.product-details{
+  background-color: var(--background);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--font-color-white);
+  margin-top: 10vh;
+  padding: 5vh 10vw;
+  height: 100%;
+
+  .css-syhbcg {
+    display: flex;
+  }
+
+  .breadcrumb{
+    display: flex;
+    justify-content: flex-start;
+    text-align: center;
+    align-items: center;
+    width: 100%;
+
+    .breadcrumb-item{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+
+      a{
+        text-wrap: nowrap;
+      }
+
+      .active{
+        color: var(--accent-1);
+        font-weight: 500;
+      }
+    }
+  }
+
+  section{
+    display: flex;
+    margin: 4vh 8vw;
+    padding: 1vh 1vw;
+    background-color: var(--background);
+    filter: brightness(1.2);
+    border-radius: 6px;
+    border: 1px solid var(--shadow);
+
+    article{
+      width: 50vw;
+      margin: 1%;
+
+      .product-images{
+        display: flex;
+        justify-content: space-between;
+
+        .vertical-images{
+          display: flex;
+          flex-direction: column;
+          gap: 1.5vh;
+
+          img{
+            width: 80px;
+            max-width: 80px;
+            height: 80px;
+            max-height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            background-color: #dcc9b8;
+            cursor: pointer;
+            box-sizing: border-box;
+          }
+
+          .selected-image {
+            height: 83px;
+            max-height: 83px;
+            border-bottom: 3px solid var(--accent-1);
+          }
+        }
+
+        .main-image{
+          position: relative;
+
+          img{
+            width: 41vw;
+            max-width: 41vw;
+            height: 650px;
+            max-height: 650px;
+            border-radius: 8px;
+            object-fit: cover;
+            background-color: #dcc9b8;
+            cursor: pointer;
+          }
+        }
+      }
+
+      .discount-percentage {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: var(--accent-1);
+        color: var(--font-color-white);
+        padding: 1.6%;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-radius: 0 12px 0 12px;
+        z-index: 1;
+      } 
+    }
+
+    aside{
+      width: 35vw;
+      padding: 2%;
+      display: flex;
+      flex-direction: column;
+  
+      h1{
+        font-size: 1.7rem;
+      }
+  
+      p{
+        opacity: 0.8;
+        margin-top: 1.5vh;
+      }
+  
+      h2{
+        font-weight: 600;
+        font-size: 1.5rem;
+      }
+
+      .discountPrice{
+        text-decoration: line-through;
+        font-size: 1rem;
+        font-weight: 400;
+        margin-top: 1.5vh;
+      }
+  
+      .divider {
+        border-bottom: 1px solid var(--foreground);
+        opacity: 0.6;
+        width: 100%;
+        margin: 0.7rem 0;
+      }
+  
+      .container-size{
+        margin-bottom: 3vh;
+  
+        h2{
+          font-size: 1rem;
+          margin: 1vh 0;
+          font-weight: 600;
+        }
+  
+        div{
+          display: flex;
+          gap: 0.5vw;
+        }
+  
+        .size{
+          border: 1px solid var(--foreground);
+          border-radius: 50%;
+          font-size: 0.9rem;
+          width: 2.2vw;
+          height: 2.2vw;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          margin-top: 0;
+          text-transform: uppercase;
+        }
+        
+        .size.selected {
+          background-color: var(--foreground);
+          color: var(--font-color);
+        }
+      }
+  
+      .container-add{
+        display: flex;
+        gap: 2%;
+        margin-bottom: 2vh;
+  
+        .add{
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 5.4vw;
+          border: 1px solid var(--foreground);
+          padding: 0.4% 2.5%;
+          border-radius: 3px;
+  
+          button{
+            background-color: transparent;
+            border: none;
+            color: var(--font-color-white);
+            font-size: 1.3rem;
+          }
+  
+          p{
+            opacity: 1;
+            margin-top: 0;
+            font-size: 1.1rem;
+          }
+        }
+      }
+  
+      .buy{
+        background-color: var(--green);
+        margin-top: 0.5vh;
+        opacity: 0.9;
+        border: none;
+        border-radius: 20px;
+        padding: 1vh 4%;
+        color: var(--font-color-white);
+        font-weight: 500;
+        font-size: 0.9rem;
+        width: 70%;
+        text-transform: uppercase;
+        box-shadow: 1px 1px 8px var(--shadow);
+        transition: 0.3s ease-in-out;
+
+        &:hover{
+          opacity: 1;
+        }
+      }
+  
+      img{
+        width: 200px;
+        height: auto;
+        margin-top: 3vh;
+      }
+    }
+  }
+}
+
+/* for mobile devices */
+@media only screen and (max-width: 480px){
+  .custom-swiper{
+    width: 80vw !important;
+  }
+
+  .product-details{
+    margin-top: 8vh;
+    padding: 5vh 3vw;
+    height: 100%;
+  
+    section{
+      margin: 4vh 0 1vh 0;
+      flex-direction: column;
+      padding: 2vh 3vw;
+  
+      article{
+        width: 100%;
+        padding: 0%;
+
+        .product-images{
+          flex-direction: column-reverse;
+          gap: 1vh;
+  
+          .vertical-images{
+            flex-direction: row;
+            flex-wrap: wrap;
+          }
+  
+          .main-image{
+            img{
+              width: 100%;
+              max-width: 100%;
+              height: 490px;
+              max-height: 490px;
+            }
+          }
+        }
+      }
+  
+      aside{
+        width: 100%;
+        padding: 0%;
+        padding-top: 1vh;
+    
+        h1{
+          font-size: 1.7rem;
+        }
+    
+        p{
+          margin-top: 1vh;
+        }
+    
+        .divider{
+          margin: 0.7rem 0;
+        }
+    
+        .container-size{
+          margin-bottom: 2vh;
+
+          div{
+            gap: 1.5vw;
+          }
+    
+          .size{
+            font-size: 1rem;
+            width: 9vw;
+            height: 9vw;
+          }
+        }
+    
+        .container-add{
+          gap: 2vw;
+    
+          .add{
+            width: min-content;
+    
+            button{
+              font-size: 1.4rem;
+            }
+    
+            p{
+              margin: 0 3vw;
+            }
+          }
+        }
+    
+        .buy{
+          width: 100%;
+        }
+    
+        img{
+          margin-top: 2vh;
+        }
+      }
+    }
+  }
+}
+
+/* for ultra large devices */
+@media only screen and (min-width: 1920px){
+  .product-details{
+    .css-syhbcg{
+      font-size: 1.5rem;
+    }
+
+    .breadcrumb{
+      .breadcrumb-item{
+        a{
+          font-size: 1.5rem;
+        }
+      }
+    }
+  
+    section{
+      article{
+        .product-images{
+          .vertical-images{
+            img{
+              width: 120px;
+              max-width: 120px;
+              height: 120px;
+              max-height: 120px;
+              border-radius: 10px;
+            }
+
+            .selected-image {
+              height: 123px;
+              max-height: 123px;
+              border-bottom: 5px solid var(--accent-1);
+            }
+          }
+  
+          .main-image{
+            img{
+              height: 980px;
+              max-height: 980px;
+              border-radius: 10px;
+            }
+          }
+        }
+
+        .discount-percentage {
+          font-size: 1.5rem;
+          border-radius: 0 14px 0 14px;
+        } 
+      }
+  
+      aside{
+        h1{
+          font-size: 2.8rem;
+        }
+    
+        p{
+          font-size: 1.5rem;
+        }
+    
+        h2{
+          font-size: 2.25rem;
+        }
+
+        .discountPrice{
+          font-size: 1.5rem;
+        }
+    
+        .container-size{
+          h2{
+            font-size: 1.5rem;
+          }
+    
+          .size{
+            font-size: 1.4rem;
+          }
+        }
+    
+        .container-add{
+          .add{
+            border-radius: 5px;
+    
+            button{
+              font-size: 1.9rem;
+            }
+    
+            p{
+              font-size: 1.6rem;
+            }
+          }
+        }
+    
+        .buy{
+          border-radius: 6px;
+          font-size: 1.5rem;
+        }
+    
+        img{
+          width: 300px;
+        }
+      }
+    }
+  }
+}

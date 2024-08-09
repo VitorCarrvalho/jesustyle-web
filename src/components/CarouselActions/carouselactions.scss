@@ -1,0 +1,143 @@
+.swiper-container{
+  width: 100%;
+  height: auto;
+  padding-left: 30vw !important;
+  cursor: grab;
+
+  .slide {
+    display: flex;
+    background-color: var(--foreground);
+    color: var(--font-color);
+    height: 42vh;
+    width: 65vw !important;
+    border-radius: 8px;
+    opacity: 0.5;
+    margin-bottom: 8vh;
+    margin-top: 5vh;
+
+    img {
+      object-fit: cover;
+      width: 50%;
+      height: auto;
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+
+    .content{
+      padding: 3%;
+
+      .tags {
+        margin: 1vh 0;
+    
+        span {
+          margin-right: 1vw;
+          opacity: 0.7;
+          font-size: 12px;
+          text-transform: uppercase;
+        }
+      }
+
+      a{
+        display: flex;
+        align-items: center;
+        gap: 0.4vw;
+        margin-top: 1.3vh;
+        font-size: 1.1rem;
+        color: var(--accent-1);
+        font-weight: 600;
+        transition: 0.3s ease-in-out;
+
+        &:hover{
+          filter: brightness(0.8);
+        }
+      }
+    }
+
+    &.swiper-slide-active {
+      opacity: 1;
+    }
+  }
+}
+
+/* for mobile devices */
+@media only screen and (max-width: 480px){
+  .swiper-container{
+    padding: 0vh 7vw !important;
+  
+    .slide{
+      height: auto;
+      width: 100% !important;
+      margin-bottom: 8vh;
+      margin-top: 4vh;
+      flex-direction: column;
+  
+      img{
+        width: 100%;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+      }
+  
+      .content{
+        padding: 5%;
+
+        p:nth-child(2){
+          margin: 1vh 0;
+        }
+  
+        .tags{
+          display: flex;
+          flex-wrap: wrap;
+          gap: 2vw;
+      
+          span{
+            margin-right: 0;
+          }
+        }
+  
+        a{
+          gap: 2vw;
+          margin: 1.5vh 0;
+          font-size: 17px;
+
+          svg{
+            font-size: 18px;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* for ultra large devices */
+@media only screen and (min-width: 1920px){
+  .swiper-container{
+    .slide {
+      border-radius: 10px;
+  
+      img{
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+      }
+  
+      .content{
+        h3{
+          font-size: 1.7rem;
+        }
+
+        p{
+          font-size: 1.5rem;
+        }
+
+        .tags {
+          span {
+            font-size: 18px;
+          }
+        }
+  
+        a{
+          font-size: 1.6rem;
+        }
+      }
+    }
+  }
+}

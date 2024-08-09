@@ -1,0 +1,267 @@
+.header{
+  background-color: var(--black);
+  color: var(--font-color-white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5vw;
+  height: 10vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  z-index: 9;
+
+  .container-logo{
+    width: 25%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 2vw;
+
+    a{
+      transition: 0.3s ease-in-out;
+
+      &:hover{
+        color: var(--accent-1);
+      } 
+    }
+  }
+
+  img{
+    width: auto;
+    height: 7.5vh;
+  }
+
+  .input{
+    border: 1px solid var(--background);
+    border-radius: 20px;
+    width: 40%;
+    height: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1vw;
+
+    input{
+      background-color: transparent;
+      width: 95%;
+      color: var(--font-color-white);
+      height: 100%;
+      border: none;
+    }
+
+    svg{
+      cursor: pointer;
+    }
+  }
+
+  nav{
+    display: flex;
+    width: 30%;
+    gap: 1.2vw;
+    justify-content: flex-end;
+
+    .btn-login{
+      background-color: var(--accent-1);
+      color: var(--font-color-white);
+      border: none;
+      font-weight: 500;
+      padding: 0.5vh 2vw;
+      border-radius: 20px;
+      opacity: 0.9;
+      transition: 0.3s ease-in;
+      box-shadow: 2px 2px 10px var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 0.5vw;
+      font-size: 0.9rem;
+
+      svg{
+        font-size: 16px;
+      }
+
+      &:hover{
+        opacity: 1;
+      }
+    }
+
+    p{
+      display: flex;
+      align-items: center;
+      gap: 0.4vw;
+      cursor: pointer;
+    }
+  }
+
+  .dropdown_wrapper{
+    max-width: 8rem;
+    width: 100%;
+    top: 11vh;
+    position: absolute;
+    right: 5vw;
+    background-color: var(--black);
+    border-radius: 0.5rem;
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    box-shadow: 0px 2px 8px 0px var(--shadow);
+    animation: fadeInAnimation 0.5s ease-in-out forwards;
+  
+    .content{
+      display: flex;
+      flex-direction: column;
+
+      button{
+        width: 100%;
+        background-color: transparent;
+        border: none;
+        outline: none;
+        color: var(--font-color-white);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5vw;
+        padding: 0.6rem 1.5rem;
+        border-radius: 6px;
+        transition: 0.3s ease-in-out;
+
+        svg{
+          font-size: 20px;
+        }
+
+        &:hover{
+          background-color: #202020;
+        }
+      }
+    }
+  }
+  
+  .dropdown_wrapper--fade-in{
+    animation: fadeInAnimation 0.5s ease-in-out forwards;
+  }
+  
+  .none{
+    display: none;
+  }
+  
+  .hide{
+    animation: fadeOutAnimation 0.5s ease-in-out forwards;
+  }
+}
+
+@keyframes fadeInAnimation{
+  0%{
+    max-height: 0rem;
+  }
+  100%{
+    max-height: 40rem;
+  }
+}
+
+@keyframes fadeOutAnimation{
+  0%{
+    max-height: 40rem;
+  }
+  100%{
+    max-height: 0rem;
+  }
+}
+
+/* for mobile devices */
+@media only screen and (max-width: 480px){
+  .header{
+    .container-logo{
+      width: auto;
+  
+      a:last-child{
+        display: none;
+      }
+    }
+  
+    img{
+      height: 6vh;
+    }
+  
+    .input{
+      display: none;
+    }
+  
+    nav{
+      width: auto;
+      gap: 5vw;
+  
+      .btn-login{
+        padding: 0.5vh 5vw;
+      }
+  
+      p{
+        gap: 0.8vw;
+      }
+    }
+  
+    .dropdown_wrapper{
+      max-width: 9rem;
+      top: 10.5vh;
+    
+      .content{
+        padding: 4% 0;
+      }
+    }
+  }
+}
+
+/* for ultra large devices */
+@media only screen and (min-width: 1920px){
+  .header{
+    .container-logo{
+      a:nth-child(2){
+        font-size: 1.5rem;
+      }
+    }
+  
+    .input{
+      border-radius: 28px;
+  
+      input{
+        font-size: 1.3rem;
+      }
+  
+      svg{
+        font-size: 26px;
+      }
+    }
+  
+    nav{
+      .btn-login{
+        border-radius: 24px;
+        font-size: 1.3rem;
+
+        svg{
+          font-size: 24px;
+        }
+      }
+  
+      p{
+        font-size: 1.5rem;
+      }
+    }
+  
+    .dropdown_wrapper{
+      max-width: 12rem;
+      border-radius: 0.8rem;
+    
+      .content{
+        button{
+          font-size: 1.4rem;
+          border-radius: 10px;
+          padding: 0.8rem 1.7rem;
+  
+          svg{
+            font-size: 30px;
+          }
+        }
+      }
+    }
+  }
+}

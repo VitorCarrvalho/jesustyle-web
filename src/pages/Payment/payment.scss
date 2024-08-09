@@ -1,0 +1,544 @@
+.payment{
+  background-color: var(--background);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  padding: 8% 5%;
+
+  .css-syhbcg {
+    display: flex;
+  }
+
+  // .breadcrumb{
+  //   display: flex;
+  //   margin-bottom: 5vh;
+
+  //   .breadcrumb-item{
+  //     a{
+  //       text-wrap: nowrap;
+  //     }
+
+  //     .active{
+  //       color: var(--accent-1);
+  //       font-weight: 500;
+  //     }
+  //   }
+  // }
+
+  .payment-container{
+    display: flex;
+
+    .checkout-section{
+      width: 55%;
+      margin: 0% 0 3% 0;
+
+      h1{
+        font-size: 1.8rem;
+        margin-bottom: 3vh;
+        color: var(--accent-1);
+        text-shadow: 1px 1px 8px var(--shadow);
+      }
+    }
+
+    .payment-form{
+      background-color: var(--background);
+      filter: brightness(1.2);
+      border: 1px solid var(--shadow);
+      padding: 1vh 2vw 5vh 2vw;
+      border-radius: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+
+      section{
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 3vh 1vw 2vh 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 2vh;
+
+        h5{
+          display: flex;
+          align-items: center;
+          white-space: nowrap;
+          width: 100%;
+          gap: 0.8vw;
+          font-size: 1.2rem;
+          font-weight: 400;
+
+          svg {
+            font-size: 26px;
+          }
+        }
+
+        span {
+          font-size: 11px;
+          text-wrap: nowrap;
+        }
+      }
+
+      div {
+        display: flex;
+        flex-direction: column;
+
+        label{
+          margin-bottom: 0.5vh;
+          font-weight: 300;
+        }
+
+        input, select {
+          margin-bottom: 2vh;
+          background-color: transparent;
+          border: 1px solid var( --foreground);
+          color: var(--font-color-white);
+          outline: none;
+          padding: 1vh 1vw;
+          border-radius: 3px;
+          font-size: 1rem;
+
+          &::placeholder{
+            font-size: 0.9rem;
+          }
+
+          option{
+            background-color: var(--background);
+          }
+        }
+      }
+
+      .additional-details{
+        padding: 1vh 1vw 2vh 0;
+      }
+    }
+
+    .purchase-details{
+      width: 50%;
+      margin: 0;
+      padding-left: 12%;
+      padding-right: 5%;
+
+      h1{
+        font-size: 1.7rem;
+        margin-bottom: 3vh;
+        text-wrap: nowrap;
+        color: var(--accent-1);
+        text-shadow: 1px 1px 8px var(--shadow);
+      }
+
+      .product-body{
+        color: var(--font-color-white);
+    
+        ul {
+          list-style-type: none;
+    
+          li{
+            display: flex;
+            border-bottom: 1px solid var(--background);
+            padding: 1.5vh 0;
+            gap: 1vw;
+    
+            img{
+              width: 130px;
+              height: 100px;
+              object-fit: cover;
+              border-radius: 4px;
+              background-color: #dcc9b8;
+              box-shadow: 1px 1px 8px var(--shadow);
+            }
+    
+            .details{
+              display: flex;
+              flex-direction: column;
+              width: 100%;
+
+              p{
+                opacity: 0.7;
+              }
+
+              p:first-child{
+                text-decoration: underline;
+                opacity: 1;
+              }
+            }
+          }
+        }
+      }
+
+      .purchase-details-p{
+        font-weight: 700;
+        gap: 0.5vw;
+        margin-bottom: 1vh;
+      }
+
+      span {
+        font-weight: 400;
+      }
+
+      .purchase-details-img{
+        width: 200px;
+        height: auto;
+        margin-top: 1vh;
+      }
+
+      .total-diviser {
+        width: 100%;
+        margin: 2vh 0;
+        border-bottom: 1px solid var(--foreground);
+      }
+
+      .total{
+        justify-content: space-between;
+        font-size: 1.1rem;
+
+        span{
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5vw;
+        }
+      }
+      
+      .perc-desconto{
+        color: var(--red);
+        font-size: 0.8rem;
+        display: flex;
+        justify-content: end;
+        font-weight: 600;
+      }
+
+      .cupom-de-desconto{
+        display: flex;
+        flex-direction: column;
+        margin: 2vh 0;
+
+        p{
+          margin-bottom: 1%;
+          font-weight: 600;
+          font-weight: 0.9rem;
+        }
+
+        div{
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+
+          input{
+            text-transform: uppercase;
+            background-color: transparent;
+            border: 1px solid;
+            border-color: var(--border);
+            border-radius: 3px;
+            color: var(--font-color-white);
+            width: 68%;
+            outline: 0;
+            padding-left: 3%;
+            font-size: 13px;
+          }
+
+          button{
+            width: 30%;
+            background-color: var(--green);
+            border: none;
+            padding: 0.8vh 1vw;
+            border-radius: 4px;
+            font-weight: 500;
+            box-shadow: 1px 1px 6px var(--shadow);
+            transition: 0.4s ease-in-out;
+            font-size: 13px;
+            text-align: center;
+            opacity: 0.8;
+
+            &:hover{
+              opacity: 1;
+            }
+          }
+
+          .botao-remover{
+            background-color: var(--red);
+            opacity: 0.8;
+
+            &:hover{
+              opacity: 1;
+            }
+          }
+        }
+      }
+
+      div {
+        display: flex;
+
+        label {
+          font-size: 0.7rem;
+          margin: 1vh 0 2vh 0;
+          color: var(--font-color-white);
+
+          input {
+            margin-right: 0.5vw;
+          }
+
+          a{
+            color: var(--accent-1);
+            text-decoration: underline;
+          }
+        }
+      }
+
+      button{
+        background-color: var(--green);
+        color: var(--font-color-white);
+        border: none;
+        box-shadow: 1px 1px 8px var(--shadow);
+        width: 100%;
+        padding: 0.8vh 0;
+        border-radius: 4px;
+        font-weight: 600;
+        opacity: 0.9;
+        font-size: 0.9rem;
+        transition: 0.3s ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover{
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
+
+/* for mobile devices */
+@media only screen and (max-width: 480px){
+  .payment{
+    padding: 13vh 5vw 5vh 5vw;
+  
+    // .breadcrumb{
+    //   margin-bottom: 7vh;
+  
+    //   .breadcrumb-item{
+    //     .active{
+    //       position: absolute;
+    //       left: 5vw;
+    //       margin-top: 6vh;
+    //     }
+    //   }
+    // }
+  
+    .payment-container{
+      flex-direction: column;
+  
+      .checkout-section{
+        width: 100%;
+        margin: 0;
+        margin-bottom: 5vh;
+  
+        h1{
+          font-size: 1.6rem;
+          margin-bottom: 1vh;
+        }
+      }
+  
+      .payment-form{
+        padding: 0 4vw 1vh 4vw;
+  
+        section{
+          padding: 2vh 0;
+          margin-bottom: 2vh;
+  
+          h5{
+            gap: 3vw;
+          }
+  
+          span{
+            text-wrap: wrap;
+            text-align: end;
+          }
+        }
+  
+        div{
+          input, select {
+            padding: 1vh 3vw;
+          }
+        }
+      }
+  
+      .purchase-details{
+        width: 100%;
+        padding: 0 2vw;
+  
+        h1{
+          font-size: 1.6rem;
+          margin-bottom: 1vh;
+        }
+  
+        p{
+          gap: 1.5vw;
+        }
+
+        .product-body{
+          ul {
+            li{
+              gap: 3vw;
+            }
+          }
+        }
+
+        .container-sizes{
+          gap: 2vw !important;
+
+          .size{
+            width: 6vw !important;
+            height: 6vw !important;
+          }
+        }
+
+        .qtd{
+          gap: 2vw !important;
+          padding: 0 2.5vw !important;
+
+        }
+      }
+    }
+  }
+}
+
+/* for ultra large devices */
+@media only screen and (min-width: 1920px){
+  .payment{
+    .css-syhbcg{
+      font-size: 1.5rem;
+    }
+
+    // .breadcrumb{
+    //   .breadcrumb-item{
+    //     a{
+    //      font-size: 1.5rem; 
+    //     }
+    //   }
+    // }
+  
+    .payment-container{
+      .checkout-section{
+        h1{
+          font-size: 2.65rem;
+        }
+      }
+  
+      .payment-form{
+        border-radius: 6px;
+  
+        section{
+          h5{
+            font-size: 1.85rem;
+  
+            svg{
+              font-size: 40px;
+            }
+          }
+  
+          span{
+            font-size: 17px;
+          }
+        }
+  
+        div{
+          label{
+            font-size: 1.5rem;
+          }
+  
+          input, select{
+            font-size: 1.5rem;
+  
+            &::placeholder{
+              font-size: 1.4rem;
+            }
+          }
+        }
+      }
+
+      .purchase-details{
+        h1{
+          font-size: 2.6rem;
+        }
+  
+        .product-body{
+          ul {
+            li{
+              img{
+                width: 190px;
+                height: 150px;
+                border-radius: 6px;
+              }
+      
+              .details{
+                p{
+                  font-size: 1.5rem;
+                }
+              }
+            }
+          }
+        }
+  
+        .purchase-details-p{
+          font-size: 1.5rem;
+        }
+  
+        span {
+          font-size: 1.5rem;
+        }
+  
+        .purchase-details-img{
+          width: 300px;
+        }
+  
+        .total{
+          span{
+            font-size: 1.5rem;
+          }
+        }
+        
+        .perc-desconto{
+          font-size: 1.2rem;
+        }
+  
+        .cupom-de-desconto{
+          p{
+            font-size: 1.5rem;
+          }
+  
+          div{
+            input{
+              font-size: 1.3rem;
+            }
+  
+            button{
+              font-size: 1.3rem;
+            }
+          }
+        }
+  
+        div {
+          label {
+            font-size: 1.1rem;
+  
+            input {
+              width: 16px;
+              height: 16px;
+            }
+  
+            a{
+              font-size: 1.1rem;
+            }
+          }
+        }
+  
+        button{
+          font-size: 1.4rem;
+        }
+      }
+    }
+  }
+}
