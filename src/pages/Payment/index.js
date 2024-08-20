@@ -4,20 +4,16 @@ import { Link, useNavigate } from "react-router-dom"
 import { Breadcrumb, BreadcrumbItem } from "@chakra-ui/react"
 import { toast } from 'react-toastify'
 import axios from 'axios'
-
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
 import CustomModal from '../../components/CustomModal'
-
 import pagarme from '../../assets/seloPagarX.png'
-
 import { Spinner } from '@chakra-ui/react'
 import { FaAngleRight } from "react-icons/fa"
 import { BsFillCreditCardFill, BsFillPersonPlusFill } from 'react-icons/bs'
 
 export default function Payment(){
   const navigate = useNavigate()
-
   const [cart, setCart] = useState([])
   const [cardName, setCardName] = useState('')
   const [cardNumber, setCardNumber] = useState('')
@@ -30,9 +26,7 @@ export default function Payment(){
   const [cep, setCep] = useState('')
   const [residentialNumber, setResidentialNumber] = useState('')
   const [termsAccepted, setTermsAccepted] = useState(false)
-
   const [street, setStreet] = useState('')
-
   const [cupom, setCupom] = useState('')
   const [desconto, setDesconto] = useState(0)
   const [botaoTexto, setBotaoTexto] = useState('Validar')
@@ -445,7 +439,7 @@ export default function Payment(){
       <Header/>
 
       <main className='payment'>
-        {/* <Breadcrumb className="breadcrumb" spacing="8px" separator={<FaAngleRight/>}>
+        { <Breadcrumb className="breadcrumb" spacing="8px" separator={<FaAngleRight/>}>
           <BreadcrumbItem className="breadcrumb-item">
             <Link to={`/products`}>Produtos</Link>
           </BreadcrumbItem>
@@ -455,7 +449,7 @@ export default function Payment(){
           <BreadcrumbItem className="breadcrumb-item">
             <Link className="active">Finalização da Compra</Link>
           </BreadcrumbItem>
-        </Breadcrumb> */}
+        </Breadcrumb> }
 
         <div className='payment-container'>
           <section className='checkout-section'>

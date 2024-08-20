@@ -1,41 +1,50 @@
-import React, { useState, useEffect } from "react"
-import './account.scss'
+import React, { useState, useEffect } from "react";
+import './account.scss';
 
-import Header from '../../components/Header'
-import Footer from '../../components/Footer'
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
 
-import AccountDetails from "./AccountDetails"
-import Address from "./Address"
-import MyOrders from "./MyOrders"
-import OrderManagement from "./OrderManagement"
+import AccountDetails from "./AccountDetails";
+import Address from "./Address";
+import MyOrders from "./MyOrders";
+import OrderManagement from "./OrderManagement";
 
-import { FaCog } from 'react-icons/fa'
+import { FaCog } from 'react-icons/fa';
 
-export default function Account(){
-  const [selectedItem, setSelectedItem] = useState("Detalhes da Conta")
+export default function Account() {
+  const [selectedItem, setSelectedItem] = useState("Detalhes da Conta");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const handleItemClick = (item) => {
-    setSelectedItem(item)
-  }
+    setSelectedItem(item);
+  };
 
   const renderContent = () => {
     switch (selectedItem) {
       case "Detalhes da Conta":
-        return <AccountDetails />
+        return <AccountDetails />;
       case "Endereço":
-        return <Address />
+        return <Address />;
       case "Meus Pedidos":
-        return <MyOrders />
+        return <MyOrders />;
       case "Gerenciamento":
-        return <OrderManagement />
+        return <OrderManagement />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   useEffect(() => {
-    document.title = "Jesustyle | Minha Conta"
-  }, [])
+    document.title = "Jesustyle | Minha Conta";
+    const token = localStorage.getItem('token');
+    
+    if (token) {
+      const decodedToken = JSON.parse(atob(token.split('.')[1])); // Decodifica o payload do JWT
+      if (decodedToken.tipoUsuario === 'Admin') {
+        setIsAdmin(true);
+      }
+    }
+  }, []);
 
   return (
     <>
@@ -55,10 +64,14 @@ export default function Account(){
             selected={selectedItem === "Meus Pedidos"} 
             onClick={handleItemClick} 
           />
-          <MenuItem label="Gerenciamento" 
-            selected={selectedItem === "Gerenciamento"} 
-            onClick={handleItemClick} icon={<FaCog />} 
-          />
+          {/* Renderiza o item "Gerenciamento" apenas se o usuário for Admin */}
+          {isAdmin && (
+            <MenuItem label="Gerenciamento" 
+              selected={selectedItem === "Gerenciamento"} 
+              onClick={handleItemClick} 
+              icon={<FaCog />} 
+            />
+          )}
         </aside>
 
         <article>
@@ -66,13 +79,13 @@ export default function Account(){
         </article>
       </main>
 
-      <Footer/>
+      <Footer />
     </>
-  )
+  );
 }
 
 const MenuItem = ({ label, selected, onClick, icon }) => (
   <p className={selected ? "active" : ""} onClick={() => onClick(label)}>
     {icon} {label}
   </p>
-)
+);

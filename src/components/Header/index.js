@@ -1,12 +1,9 @@
 import React, { useState, useRef, useEffect } from "react"
 import './header.scss'
 import { Link, useNavigate } from "react-router-dom"
-
 import Login from '../../pages/Login'
 import Cart from '../Cart'
-
 import logo from '../../assets/logos/transparent.png'
-
 import { IoSearch, IoPersonOutline } from "react-icons/io5"
 import { BsShop } from "react-icons/bs"
 import { BsArrowRight } from "react-icons/bs"
@@ -55,11 +52,18 @@ export default function Header({ onSearch }) {
     }
   }, [notificationsRef.current, dropdownRef.current])
 
-  async function handleLogout(){
-    try{
+  async function handleLogout() {
+    try {
+      // Remover o token do armazenamento local
+      localStorage.removeItem('token');
 
-    } catch(error){
-      
+      // Redirecionar o usuário para a página de login ou página inicial
+      navigate('/login'); // ou navigate('/') para a página inicial
+
+      // Opcional: exibir uma mensagem de sucesso ou notificação de logout
+      console.log("Usuário deslogado com sucesso.");
+    } catch (error) {
+      console.error("Erro ao deslogar:", error);
     }
   }
 
