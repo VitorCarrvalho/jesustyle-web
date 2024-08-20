@@ -17,6 +17,7 @@ export default function Payment(){
   const [cart, setCart] = useState([])
   const [cardName, setCardName] = useState('')
   const [cardNumber, setCardNumber] = useState('')
+  const [email, setEmail] = useState('')
   const [expiryDate, setExpiryDate] = useState('')
   const [cvv, setCvv] = useState('')
   const [installments, setInstallments] = useState('10 X de R$10,00')
@@ -53,6 +54,37 @@ export default function Payment(){
 
     document.title = "Jesustyle | Finalizar Compra"
   }, [])
+
+  useEffect(() => {
+    async function fetchUserEmail() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      try {
+        const response = await fetch('https://localhost:7289/api/Autenticacao/users/details', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setEmail(data.email || '');
+        } else {
+          console.error('Erro ao obter detalhes do usuário:', await response.json());
+        }
+      } catch (error) {
+        console.error('Erro ao fazer a requisição:', error);
+      }
+    }
+
+    fetchUserEmail();
+  }, [navigate]);
 
   const total = cart.reduce((acc, curr) => acc + curr.price * curr.quantity, 0)
 
@@ -359,17 +391,18 @@ export default function Payment(){
       setLoadingButton(false)
       return
     }
+    
 
     const paymentData = {
       items: cart.map(product => ({
         amount: product.price * 100,
         description: product.name,
         quantity: product.quantity,
-        code: "CAMISETACODE"  //pregar o code da api de produtos
+        code: "CAMISETACODE"  
       })),
       customer: {
-        name: "José da Silva",  //pegar do login/cadastro
-        email: "jose.silva@example.com",  //pegar do login
+        name: cardName, 
+        email: email,  
         document: cpfOrCnpj.replace(/\D/g, ""),
         type: personType,
         phones: {

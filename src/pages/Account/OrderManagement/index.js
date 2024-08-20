@@ -3,14 +3,12 @@ import './ordermanagement.scss'
 import '../account.scss'
 import { products } from "../../AllProducts"
 import Modal from "react-modal"
-
 import camisetaTrustInTheLordFront from '../../../assets/products/CamisetaTrustInTheLordFront.png'
 import camisetaGodisGoodFront from '../../../assets/products/CamisetaGodisGoodFront.png'
 import camisetaJesusLovesYouFront from '../../../assets/products/CamisetaJesusLovesYouFront.png'
 import moletomLikeJesusFront from '../../../assets/products/MoletomLikeJesusFront.png'
 import moletomGolaCarecaJesusSaves from '../../../assets/products/MoletomGolaCarecaJesusSaves.png'
 import calcaMoletomJesusSaves from '../../../assets/products/CalcaMoletomJesusSaves.png'
-
 import { FaTruck, FaInfoCircle, FaCalendarAlt, FaCog, FaCheckCircle, FaClock, FaDollarSign } from 'react-icons/fa'
 import { IoMdAdd } from "react-icons/io"
 import { IoClose } from "react-icons/io5"
@@ -85,7 +83,7 @@ const OrderList = ({ orders, onOrderClick, selectedOrderStatus, onStatusFilterCh
 
 const ProductList = ({ products }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [newProduct, setNewProduct] = useState({ name: "", description: "", src: "", price: null })
+  const [newProduct, setNewProduct] = useState({ name: "", description: "", src: "", hoverSrc: "", originalPrice: null, discountPrice: null, discountPercentage: null, size: [] })
   const sizeOptions = ['PP', 'P', 'M', 'G']
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [isProductModalOpen, setIsProductModalOpen] = useState(false)
@@ -93,9 +91,42 @@ const ProductList = ({ products }) => {
   const handleOpenModal = () => setIsModalOpen(true)
   const handleCloseModal = () => setIsModalOpen(false)
 
-  const handleAddProduct = () => {
-    handleCloseModal()
+  const handleAddProduct = async () => {
+    try {
+      const response = await fetch('https://localhost:7289/api/Produto', { // Use o URL completo aqui
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nomeProduto: newProduct.name,
+          categoria: newProduct.category,
+          descricao: newProduct.description,
+          urlImagem: newProduct.src,
+          urlImagemAdicional: newProduct.hoverSrc,
+          precoOriginal: newProduct.originalPrice,
+          precoComDesconto: newProduct.discountPrice,
+          percentualDesconto: newProduct.discountPercentage,
+          tamanhos: newProduct.size,
+        }),
+      });
+  
+      const responseData = await response.text(); // Use text() para obter o corpo da resposta como texto
+  
+      if (response.ok) {
+        alert('Produto adicionado com sucesso!');
+        handleCloseModal();
+        // Optionally, refresh the product list here
+      } else {
+        console.error('Erro ao adicionar produto:', responseData); // Log error details
+        alert(`Erro ao adicionar produto: ${responseData}`); // Alert error details
+      }
+    } catch (error) {
+      console.error('Erro ao adicionar produto:', error);
+      alert('Erro ao adicionar produto.');
+    }
   }
+  
 
   const handleSizeChange = (size, isChecked) => {
     const newSize = newProduct.size ? [...newProduct.size] : []
@@ -167,8 +198,8 @@ const ProductList = ({ products }) => {
             <label className="sizes">Tamanhos:
             <div>
               {sizeOptions.map(size => (
-                <div>
-                  <input type="checkbox" value={size} checked={newProduct.size?.includes(size)} onChange={(e) => handleSizeChange(size, e.target.checked)}/>
+                <div key={size}>
+                  <input type="checkbox" value={size} checked={newProduct.size.includes(size)} onChange={(e) => handleSizeChange(size, e.target.checked)}/>
                   <p>{size}</p>
                 </div>
               ))}

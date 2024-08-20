@@ -53,7 +53,8 @@ export default function Login({ isOpen, closeModal }) {
     try {
       setLoadingButton(true);
   
-      const response = await fetch('https://localhost:7206/api/Auth/login', {
+      const response = await fetch('https://localhost:7289/api/Autenticacao/login', {            
+        
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +113,7 @@ export default function Login({ isOpen, closeModal }) {
     try {
       setLoadingButton(true);
   
-      const response = await axios.post('https://localhost:7206/api/Auth/register', { 
+      const response = await axios.post('https://localhost:7289/api/Autenticacao/register', { 
         Nome: username, // Alterado para Nome
         DataNascimento: birthday, // Você pode precisar alterar isso também, se necessário
         Email: email, // Alterado para Email

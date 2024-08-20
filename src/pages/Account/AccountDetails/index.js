@@ -33,7 +33,7 @@ export default function AccountDetails() {
             }
 
             try {
-                const response = await fetch('https://localhost:7206/api/Auth/users/details', {
+                const response = await fetch('https://localhost:7289/api/Autenticacao/users/details', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -117,7 +117,7 @@ export default function AccountDetails() {
         };
 
         try {
-            const response = await fetch('https://localhost:7206/api/Auth/users/update', {
+            const response = await fetch('https://localhost:7289/api/Autenticacao/users/update', {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
