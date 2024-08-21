@@ -59,7 +59,7 @@ export default function Login({ isOpen, closeModal }) {
         headers: {
           'Content-Type': 'application/json',
           'Accept': '*/*',
-          'usuario': email,
+          'email': email,
           'senha': password
         },
       });
@@ -67,6 +67,7 @@ export default function Login({ isOpen, closeModal }) {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('token', data.token);
+        localStorage.setItem('codigo', data.codigo);
         toast.success("Login realizado com sucesso!");
         navigate('/products');
         scrollToTop();
@@ -111,7 +112,7 @@ export default function Login({ isOpen, closeModal }) {
     try {
       setLoadingButton(true);
   
-      const response = await axios.post('https://localhost:7289/api/Autenticacao/register', { 
+      const response = await axios.post('https://localhost:8082/usuarios/cadastro', { 
         Nome: username, // Alterado para Nome
         DataNascimento: birthday, // Você pode precisar alterar isso também, se necessário
         Email: email, // Alterado para Email
