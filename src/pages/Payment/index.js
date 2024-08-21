@@ -12,7 +12,7 @@ import { Spinner } from '@chakra-ui/react'
 import { FaAngleRight } from "react-icons/fa"
 import { BsFillCreditCardFill, BsFillPersonPlusFill } from 'react-icons/bs'
 
-export default function Payment(){
+export default function Payment() {
   const navigate = useNavigate()
   const [cart, setCart] = useState([])
   const [cardName, setCardName] = useState('')
@@ -34,18 +34,21 @@ export default function Payment(){
   const [botaoCor, setBotaoCor] = useState('')
   const botaoClassName = botaoCor === 'green' ? 'botao-validar' : (botaoCor === 'red' ? 'botao-remover' : '')
   const [loading, setLoading] = useState(true)
-  const [loadingButton, setLoadingButton] = useState(false) 
+  const [loadingButton, setLoadingButton] = useState(false)
   const [isOpenModalSuccess, setIsOpenModalSuccess] = useState(false)
+  const [frete, setFrete] = useState(null);
+  const [estimativaEntrega, setEstimativaEntrega] = useState('');
+
 
   useEffect(() => {
-    async function fetchData(){
-      try{
+    async function fetchData() {
+      try {
         const cartItems = JSON.parse(localStorage.getItem("cart")) || []
         setCart(cartItems)
 
-      } catch(error){
+      } catch (error) {
 
-      } finally{
+      } finally {
         setLoading(false)
       }
     }
@@ -86,6 +89,131 @@ export default function Payment(){
     fetchUserEmail();
   }, [navigate]);
 
+  const fetchFrete = async () => {
+    const token = 'd2fbdabecf0c19213a5865ff5b4e9f629cb315e9a7db5519388afe71940a5aa5'; // Token fornecido
+  
+    try {
+      // Prepare a URL com os parâmetros de consulta
+      const url = new URL('http://localhost:8082/transporte/simular');
+      url.searchParams.append('cepOrigem', '06509012');
+      url.searchParams.append('cepDestino', '06447010');
+      url.searchParams.append('vlrMerc', 500);
+      url.searchParams.append('pesoMerc', 1.0);
+      url.searchParams.append('ordernar', 'preco');
+  
+      // Adiciona parâmetros de volumes, produtos e serviços
+      const volumes = [];
+      const produtos = [
+        {
+          peso: 1.0,
+          altura: 0.30,
+          largura: 0.30,
+          comprimento: 0.30,
+          valor: 500,
+          quantidade: 1
+        }
+      ];
+      const servicos = ["E", "X"];
+  
+      volumes.forEach((volume, index) => {
+        Object.keys(volume).forEach(key => {
+          url.searchParams.append(`volumes[${index}][${key}]`, volume[key]);
+        });
+      });
+  
+      produtos.forEach((produto, index) => {
+        Object.keys(produto).forEach(key => {
+          url.searchParams.append(`produtos[${index}][${key}]`, produto[key]);
+        });
+      });
+  
+      servicos.forEach((servico, index) => {
+        url.searchParams.append(`servicos[${index}]`, servico);
+      });
+  
+      // Faz a requisição GET
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`, // Inclua o token aqui
+          'Accept': 'application/json',
+        },
+      });
+  
+      if (!response.ok) {
+        // Lança um erro se a resposta não for bem-sucedida
+        throw new Error(`Erro: ${response.statusText}`);
+      }
+  
+      const data = await response.json(); // Converte a resposta para JSON
+  
+      // Ajuste conforme a estrutura real da resposta da API
+      const { valor, tempoEstimado } = data;
+      setFrete(valor);
+      setEstimativaEntrega(tempoEstimado);
+    } catch (error) {
+      console.error('Erro ao calcular o frete:', error);
+      toast.error("Erro ao calcular o frete.");
+    }
+  };
+  
+  useEffect(() => {
+    fetchFrete();
+  }, []);
+
+
+
+
+  const fetchAddressData = async (cep) => {
+    try {
+      const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
+      const { data } = response
+
+      if (!data.erro) {
+        return {
+          street: data.logradouro,
+          neighborhood: data.bairro,
+          city: data.localidade,
+          state: data.uf,
+        }
+      } else {
+        throw new Error("CEP não encontrado.")
+      }
+    } catch (error) {
+      toast.error("Não foi possível encontrar o endereço para o CEP fornecido.")
+      throw error
+    }
+  }
+
+  useEffect(() => {
+    const fetchAndSetAddress = async () => {
+      if (cep && residentialNumber) {
+        try {
+          const addressData = await fetchAddressData(cep)
+          setStreet(`${addressData.street}, ${residentialNumber}, ${addressData.city}/${addressData.state} - ${cep}`)
+        } catch (error) {
+          setStreet('')
+        }
+      }
+    }
+
+    fetchAndSetAddress()
+  }, [cep, residentialNumber])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   const total = cart.reduce((acc, curr) => acc + curr.price * curr.quantity, 0)
 
   const formatPrice = (value) => {
@@ -95,43 +223,43 @@ export default function Payment(){
   const handleCardNameChange = (e) => {
     const value = e.target.value.replace(/[^a-zA-Z\s]/g, '')
     setCardName(value)
-  }  
+  }
 
   const formatCardNumber = (number) => {
     return number.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim().slice(0, 19)
   }
-  
+
   const handleCardNumberChange = (e) => {
     const value = formatCardNumber(e.target.value)
     setCardNumber(value)
-  }  
+  }
 
   const formatExpiryDate = (expiryDate) => {
     return expiryDate.replace(/\D/g, '').replace(/(\d{2})(\d{0,2})/, '$1/$2').slice(0, 5)
   }
-  
+
   const handleExpiryDateChange = (e) => {
     const value = formatExpiryDate(e.target.value)
     setExpiryDate(value)
-  }   
+  }
 
   const formatCvv = (cvv) => {
     return cvv.replace(/\D/g, '').slice(0, 4)
   }
-  
+
   const handleCvvChange = (e) => {
     const value = formatCvv(e.target.value)
     setCvv(value)
-  } 
-  
+  }
+
   const formatPhone = (phone) => {
     return phone.replace(/\D/g, '').replace(/^(\d{2})(\d{1,5})(\d{1,4})$/, '($1) $2-$3').trim()
   }
-  
+
   const handlePhoneChange = (e) => {
     const value = formatPhone(e.target.value)
     setPhone(value)
-  }  
+  }
 
   const isValidCardName = (name) => {
     return name.trim() !== ''
@@ -139,20 +267,20 @@ export default function Payment(){
 
   const isValidCardNumber = (number) => {
     const cleanNumber = number.replace(/\s+/g, '')
-    const cardNumberRegex = /^\d{13,19}$/ 
+    const cardNumberRegex = /^\d{13,19}$/
     return cardNumberRegex.test(cleanNumber)
-  }  
+  }
 
   const isValidExpiryDate = (expiryDate) => {
     const [month, year] = expiryDate.split('/').map(Number)
     const now = new Date()
     const currentYear = now.getFullYear() % 100
     const currentMonth = now.getMonth() + 1
-    
+
     if (month < 1 || month > 12 || year < currentYear || (year === currentYear && month < currentMonth)) {
       return false
     }
-    
+
     return true
   }
 
@@ -167,51 +295,51 @@ export default function Payment(){
 
   useEffect(() => {
     setCpfOrCnpj('')
-  }, [personType])  
+  }, [personType])
 
   const isValidCPF = (cpf) => {
     cpf = cpf.replace(/\D/g, '')
-  
+
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false
-  
+
     let sum = 0
     let remainder
-  
+
     for (let i = 1; i <= 9; i++) sum += parseInt(cpf.charAt(i - 1)) * (11 - i)
     remainder = (sum * 10) % 11
-  
+
     if (remainder === 10 || remainder === 11) remainder = 0
     if (remainder !== parseInt(cpf.charAt(9))) return false
-  
+
     sum = 0;
     for (let i = 1; i <= 10; i++) sum += parseInt(cpf.charAt(i - 1)) * (12 - i)
     remainder = (sum * 10) % 11
-  
+
     if (remainder === 10 || remainder === 11) remainder = 0
     return remainder === parseInt(cpf.charAt(10))
   }
-  
+
   const isValidCNPJ = (cnpj) => {
     cnpj = cnpj.replace(/\D/g, '')
-  
+
     if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false
-  
+
     let sum = 0
     let remainder
-  
+
     for (let i = 0; i < 12; i++) sum += parseInt(cnpj.charAt(i)) * (5 - (i % 8))
     remainder = sum % 11
     if (remainder < 2) remainder = 0
     else remainder = 11 - remainder
-  
+
     if (remainder !== parseInt(cnpj.charAt(12))) return false
-  
+
     sum = 0
     for (let i = 0; i < 13; i++) sum += parseInt(cnpj.charAt(i)) * (6 - (i % 8))
     remainder = sum % 11
     if (remainder < 2) remainder = 0
     else remainder = 11 - remainder
-  
+
     return remainder === parseInt(cnpj.charAt(13))
   }
 
@@ -220,41 +348,7 @@ export default function Payment(){
     return phoneRegex.test(phone)
   }
 
-  const fetchAddressData = async (cep) => {
-    try{
-      const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
-      const { data } = response
-  
-      if(!data.erro){
-        return {
-          street: data.logradouro,
-          neighborhood: data.bairro,
-          city: data.localidade,
-          state: data.uf,
-        }
-      } else {
-        throw new Error("CEP não encontrado.")
-      }
-    } catch(error){
-      toast.error("Não foi possível encontrar o endereço para o CEP fornecido.")
-      throw error
-    }
-  }  
-
-  useEffect(() => {
-    const fetchAndSetAddress = async () => {
-      if(cep && residentialNumber){
-        try {
-          const addressData = await fetchAddressData(cep)
-          setStreet(`${addressData.street}, ${residentialNumber}, ${addressData.city}/${addressData.state} - ${cep}`)
-        }catch(error){
-          setStreet('')
-        }
-      }
-    }
-  
-    fetchAndSetAddress()
-  }, [cep, residentialNumber])  
+ 
 
   // const handleChangeCupom = (event) => {
   //   const selectedValue = event.target.value
@@ -322,8 +416,8 @@ export default function Payment(){
       { field: residentialNumber, message: 'Por favor, preencha o número residencial.' }
     ]
 
-    for(const field of fieldsToCheck){
-     if(!field.field) {
+    for (const field of fieldsToCheck) {
+      if (!field.field) {
         toast.warning(field.message)
         setLoadingButton(false)
         return
@@ -335,7 +429,7 @@ export default function Payment(){
       setLoadingButton(false)
       return
     }
-  
+
     if (!isValidCardNumber(cardNumber)) {
       toast.warning('Por favor, preencha um número de cartão válido.')
       setLoadingButton(false)
@@ -347,7 +441,7 @@ export default function Payment(){
       setLoadingButton(false)
       return
     }
-  
+
     if (!isValidCvv(cvv)) {
       toast.warning('Por favor, preencha um CVV válido.')
       setLoadingButton(false)
@@ -359,7 +453,7 @@ export default function Payment(){
       setLoadingButton(false)
       return
     }
-  
+
     if (personType === 'legal_entity' && !isValidCNPJ(cpfOrCnpj)) {
       toast.warning('CNPJ inválido.')
       setLoadingButton(false)
@@ -378,31 +472,31 @@ export default function Payment(){
       state: ''
     }
 
-    try{
+    try {
       addressData = await fetchAddressData(cep)
-    } catch(error){
+    } catch (error) {
       toast.warning('Endereço não encontrado. Verifique o CEP.')
       setLoadingButton(false)
       return
     }
 
-    if(!termsAccepted){
+    if (!termsAccepted) {
       toast.warning('Você deve aceitar os Termos de Serviço para finalizar a compra.')
       setLoadingButton(false)
       return
     }
-    
+
 
     const paymentData = {
       items: cart.map(product => ({
         amount: product.price * 100,
         description: product.name,
         quantity: product.quantity,
-        code: "CAMISETACODE"  
+        code: "CAMISETACODE"
       })),
       customer: {
-        name: cardName, 
-        email: email,  
+        name: cardName,
+        email: email,
         document: cpfOrCnpj.replace(/\D/g, ""),
         type: personType,
         phones: {
@@ -438,28 +532,28 @@ export default function Payment(){
       ]
     }
 
-    try{
+    try {
       setLoadingButton(true)
 
       const response = await axios.post('/core/v5/orders', paymentData, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Basic c2tfdGVzdF80ZTI3MDA4ZTE0YzI0MTY0YmFkNmU3ZmRiZmRkOWRlZTo='
-         }
+        }
       })
 
-      if(response.data.status === 'paid'){
+      if (response.data.status === 'paid') {
         console.log(paymentData)
         setIsOpenModalSuccess(true)
         await new Promise(resolve => setTimeout(resolve, 4000))
         localStorage.removeItem("cart")
         navigate('/products')
 
-       }else{
+      } else {
         toast.error('Erro ao processar pagamento. Tente novamente.')
       }
 
-    } catch(error){
+    } catch (error) {
       toast.error('Erro ao processar pagamento. Tente novamente mais tarde.')
 
     } finally {
@@ -469,10 +563,10 @@ export default function Payment(){
 
   return (
     <>
-      <Header/>
+      <Header />
 
       <main className='payment'>
-        { <Breadcrumb className="breadcrumb" spacing="8px" separator={<FaAngleRight/>}>
+        {<Breadcrumb className="breadcrumb" spacing="8px" separator={<FaAngleRight />}>
           <BreadcrumbItem className="breadcrumb-item">
             <Link to={`/products`}>Produtos</Link>
           </BreadcrumbItem>
@@ -482,32 +576,32 @@ export default function Payment(){
           <BreadcrumbItem className="breadcrumb-item">
             <Link className="active">Finalização da Compra</Link>
           </BreadcrumbItem>
-        </Breadcrumb> }
+        </Breadcrumb>}
 
         <div className='payment-container'>
           <section className='checkout-section'>
             <h1>Finalizar compra</h1>
             <form className='payment-form'>
               <section>
-                <h5><BsFillCreditCardFill/>Dados do cartão</h5>
+                <h5><BsFillCreditCardFill />Dados do cartão</h5>
                 <span>Aceitamos somente cartão de crédito!*</span>
               </section>
 
-              <div style={{width: window.innerWidth <= 480 ? '100%' : '48%'}}>
+              <div style={{ width: window.innerWidth <= 480 ? '100%' : '48%' }}>
                 <label htmlFor="cardName">Nome no cartão:</label>
-                <input type="text" id="cardName" maxLength="19" placeholder="Nome no cartão" value={cardName} onChange={handleCardNameChange}/>
+                <input type="text" id="cardName" maxLength="19" placeholder="Nome no cartão" value={cardName} onChange={handleCardNameChange} />
               </div>
-              <div style={{width: window.innerWidth <= 480 ? '100%' : '50%'}}>
+              <div style={{ width: window.innerWidth <= 480 ? '100%' : '50%' }}>
                 <label htmlFor="cardNumber">Número do Cartão:</label>
-                <input type="text" id="cardNumber" placeholder="Número do Cartão" value={cardNumber} onChange={handleCardNumberChange}/>
+                <input type="text" id="cardNumber" placeholder="Número do Cartão" value={cardNumber} onChange={handleCardNumberChange} />
               </div>
-              <div style={{width: window.innerWidth <= 480 ? '100%' : '32%'}}>
+              <div style={{ width: window.innerWidth <= 480 ? '100%' : '32%' }}>
                 <label htmlFor="expiryDate">Data de Validade:</label>
-                <input type="text" id="expiryDate" placeholder="MM/AA" maxLength="5" value={expiryDate} onChange={handleExpiryDateChange}/>
+                <input type="text" id="expiryDate" placeholder="MM/AA" maxLength="5" value={expiryDate} onChange={handleExpiryDateChange} />
               </div>
-              <div style={{width: window.innerWidth <= 480 ? '100%' : '32%'}}>
+              <div style={{ width: window.innerWidth <= 480 ? '100%' : '32%' }}>
                 <label htmlFor="cvv">CVV:</label>
-                <input type="text" id="cvv" maxLength="4" placeholder="CVV" value={cvv} onChange={handleCvvChange}/>
+                <input type="text" id="cvv" maxLength="4" placeholder="CVV" value={cvv} onChange={handleCvvChange} />
               </div>
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '32%' }}>
                 <label htmlFor="installments">Número de parcelas:</label>
@@ -521,37 +615,37 @@ export default function Payment(){
               <section className='additional-details'>
                 <h5><BsFillPersonPlusFill />Dados complementares</h5>
               </section>
-              <div style={{width: window.innerWidth <= 480 ? '100%' : '48%'}}>
+              <div style={{ width: window.innerWidth <= 480 ? '100%' : '48%' }}>
                 <label>Tipo de Pessoa:</label>
                 <select id="personType" value={personType} onChange={(e) => setPersonType(e.target.value)}>
                   <option value="individual">Pessoa Física</option>
                   <option value="legal_entity">Pessoa Jurídica</option>
                 </select>
               </div>
-              <div style={{width: window.innerWidth <= 480 ? '100%' : '48%'}}>
+              <div style={{ width: window.innerWidth <= 480 ? '100%' : '48%' }}>
                 <label>{personType === 'individual' ? 'CPF:' : 'CNPJ:'}</label>
-                <input type="text" placeholder={personType === 'individual' ? 'CPF' : 'CNPJ'} maxLength={personType === 'individual' ? "11" : "14"} value={cpfOrCnpj} onChange={(e) => setCpfOrCnpj(e.target.value)}/>
+                <input type="text" placeholder={personType === 'individual' ? 'CPF' : 'CNPJ'} maxLength={personType === 'individual' ? "11" : "14"} value={cpfOrCnpj} onChange={(e) => setCpfOrCnpj(e.target.value)} />
               </div>
-              <div style={{width: window.innerWidth <= 480 ? '100%' : '34%'}}>
+              <div style={{ width: window.innerWidth <= 480 ? '100%' : '34%' }}>
                 <label>Telefone:</label>
-                <input type="tel" placeholder="(**) *****-****" maxLength={15} value={phone} onChange={handlePhoneChange}/>
+                <input type="tel" placeholder="(**) *****-****" maxLength={15} value={phone} onChange={handlePhoneChange} />
               </div>
-              <div style={{width: window.innerWidth <= 480 ? '100%' : '34%'}}>
+              <div style={{ width: window.innerWidth <= 480 ? '100%' : '34%' }}>
                 <label>CEP:</label>
-                <input type="text" placeholder="CEP" maxLength={9} value={cep} onChange={(e) => setCep(e.target.value)}/>
+                <input type="text" placeholder="CEP" maxLength={9} value={cep} onChange={(e) => setCep(e.target.value)} />
               </div>
-              <div style={{width: window.innerWidth <= 480 ? '100%' : '26%'}}>
+              <div style={{ width: window.innerWidth <= 480 ? '100%' : '26%' }}>
                 <label>Nº residencial:</label>
-                <input type="text" placeholder="Nº residencial" maxLength={9} value={residentialNumber} onChange={(e) => setResidentialNumber(e.target.value)}/>
+                <input type="text" placeholder="Nº residencial" maxLength={9} value={residentialNumber} onChange={(e) => setResidentialNumber(e.target.value)} />
               </div>
             </form>
           </section>
 
           <section className='purchase-details'>
             <h1>Resumo da Compra</h1>
-            {street && ( <p className="purchase-details-p">Local de Entrega: <span>{street}</span></p> )}
-            {/* <p className='purchase-details-p'>Entrega Estimada: <span></span></p> */}
-            {street && ( <p className='total-diviser purchase-details-p'></p> )}
+            {street && (<p className="purchase-details-p">Local de Entrega: <span>{street}</span></p>)}
+            {<p className='purchase-details-p'>Entrega Estimada: <span></span></p>}
+            {street && (<p className='total-diviser purchase-details-p'></p>)}
             <aside className="product-body">
               <ul>
                 {cart.map(product => (
@@ -569,7 +663,14 @@ export default function Payment(){
             </aside>
             <p className='total-diviser purchase-details-p'></p>
             <p className='purchase-details-p'>Parcelamento: <span>{installments}</span></p>
-            <p className='purchase-details-p' style={{display: 'flex', justifyContent: 'space-between'}}>Total: <span>{formatPrice(total)}</span></p>
+            <p className='purchase-details-p' style={{ display: 'flex', justifyContent: 'space-between' }}>Total: <span>{formatPrice(total)}</span></p>
+            <p className='purchase-details-p' style={{ display: 'flex', justifyContent: 'space-between' }}>Frete: <span>{formatPrice(frete || 0)}</span></p>
+
+
+
+
+
+
             {/* <p className='total purchase-details-p'>Total: <span>
                 {desconto > 0 && <h6 className='perc-desconto'>- R$ {desconto.toFixed(2).replace('.', ',')}</h6>}
                 R$ {(total - desconto).toFixed(2).replace('.', ',')}
@@ -582,24 +683,24 @@ export default function Payment(){
                 <button className={botaoClassName} onClick={handleBotaoClick}>{botaoTexto}</button>
               </div>
             </div> */}
-            <img className='purchase-details-img' src={pagarme}/>
+            <img className='purchase-details-img' src={pagarme} />
             <div>
-              <label><input type='checkbox' checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)}/>Ao marcar esta opção, você concorda com os <a href='#'>Termos de Serviço</a>.</label>
+              <label><input type='checkbox' checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} />Ao marcar esta opção, você concorda com os <a href='#'>Termos de Serviço</a>.</label>
             </div>
             <button type='button' onClick={handlePayment} disabled={loadingButton}>
-              {loadingButton ? <Spinner className="spinner-button" speed='0.70s'/> : 'Finalizar Compra'}
+              {loadingButton ? <Spinner className="spinner-button" speed='0.70s' /> : 'Finalizar Compra'}
             </button>
           </section>
         </div>
       </main>
 
-      <CustomModal isOpen={isOpenModalSuccess} closeModal={() => {setIsOpenModalSuccess(false)}}
+      <CustomModal isOpen={isOpenModalSuccess} closeModal={() => { setIsOpenModalSuccess(false) }}
         headerText="Compra realizada com sucesso!"
         paragraphText="Agradecemos por escolher nossa loja. Seu pedido está sendo processado e em breve você receberá um e-mail com todos os detalhes da sua compra."
         spanText="Se precisar de mais informações ou suporte, não hesite em nos contatar."
       />
 
-      <Footer/>
+      <Footer />
     </>
   )
 }
