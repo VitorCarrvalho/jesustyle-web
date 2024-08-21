@@ -57,7 +57,7 @@ export default function Payment() {
 
     document.title = "Jesustyle | Finalizar Compra"
   }, [])
-
+/*
   useEffect(() => {
     async function fetchUserEmail() {
       const token = localStorage.getItem('token');
@@ -88,16 +88,14 @@ export default function Payment() {
 
     fetchUserEmail();
   }, [navigate]);
-
+*/
   const fetchFrete = async () => {
-    const token = 'd2fbdabecf0c19213a5865ff5b4e9f629cb315e9a7db5519388afe71940a5aa5';
-    
     try {
-      const url = 'http://localhost:8080/transporte/simular';
+      const url = 'http://localhost:8082/transporte/simular';
   
       const requestBody = {
         cepOrigem: '06509012',
-        cepDestino: '06447010',
+        cepDestino: '06444000',
         vlrMerc: 500,
         pesoMerc: 1.0,
         volumes: [
@@ -128,8 +126,7 @@ export default function Payment() {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` // Envia o token como um cabeçalho Authorization
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(requestBody)
       });
@@ -212,6 +209,12 @@ export default function Payment() {
   const handleCardNameChange = (e) => {
     const value = e.target.value.replace(/[^a-zA-Z\s]/g, '')
     setCardName(value)
+  }
+
+  
+  const emailChange = (e) => {
+    const value = e.target.value
+    setEmail(value)
   }
 
   const formatCardNumber = (number) => {
@@ -400,6 +403,7 @@ export default function Payment() {
       { field: cvv, message: 'Por favor, preencha o CVV.' },
       { field: installments, message: 'Por favor, selecione o número de parcelas.' },
       { field: cpfOrCnpj, message: personType === 'individual' ? 'Por favor, preencha o CPF.' : 'Por favor, preencha o CNPJ.' },
+      { field: email, message: 'Por favor, preencha o email.' },
       { field: phone, message: 'Por favor, preencha o telefone.' },
       { field: cep, message: 'Por favor, preencha o CEP.' },
       { field: residentialNumber, message: 'Por favor, preencha o número residencial.' }
@@ -614,6 +618,10 @@ export default function Payment() {
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '48%' }}>
                 <label>{personType === 'individual' ? 'CPF:' : 'CNPJ:'}</label>
                 <input type="text" placeholder={personType === 'individual' ? 'CPF' : 'CNPJ'} maxLength={personType === 'individual' ? "11" : "14"} value={cpfOrCnpj} onChange={(e) => setCpfOrCnpj(e.target.value)} />
+              </div>
+              <div style={{ width: window.innerWidth <= 480 ? '100%' : '48%' }}>
+                <label>{'Email:'}</label>
+                <input type="text" placeholder={'Email'} value={email}  onChange={emailChange} />
               </div>
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '34%' }}>
                 <label>Telefone:</label>

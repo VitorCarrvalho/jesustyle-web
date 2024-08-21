@@ -53,17 +53,15 @@ export default function Login({ isOpen, closeModal }) {
     try {
       setLoadingButton(true);
   
-      const response = await fetch('https://localhost:7289/api/Autenticacao/login', {            
+      const response = await fetch('http://localhost:8082/usuario/login', {            
         
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': '*/*',
+          'usuario': email,
+          'senha': password
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
       });
   
       if (response.ok) {
