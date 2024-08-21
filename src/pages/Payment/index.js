@@ -90,79 +90,68 @@ export default function Payment() {
   }, [navigate]);
 
   const fetchFrete = async () => {
-    const token = 'd2fbdabecf0c19213a5865ff5b4e9f629cb315e9a7db5519388afe71940a5aa5'; // Token fornecido
-  
+    const token = 'd2fbdabecf0c19213a5865ff5b4e9f629cb315e9a7db5519388afe71940a5aa5';
+    
     try {
-      // Prepare a URL com os parâmetros de consulta
-      const url = new URL('http://localhost:8082/transporte/simular');
-      url.searchParams.append('cepOrigem', '06509012');
-      url.searchParams.append('cepDestino', '06447010');
-      url.searchParams.append('vlrMerc', 500);
-      url.searchParams.append('pesoMerc', 1.0);
-      url.searchParams.append('ordernar', 'preco');
+      const url = 'http://localhost:8080/transporte/simular';
   
-      // Adiciona parâmetros de volumes, produtos e serviços
-      const volumes = [];
-      const produtos = [
-        {
-          peso: 1.0,
-          altura: 0.30,
-          largura: 0.30,
-          comprimento: 0.30,
-          valor: 500,
-          quantidade: 1
-        }
-      ];
-      const servicos = ["E", "X"];
+      const requestBody = {
+        cepOrigem: '06509012',
+        cepDestino: '06447010',
+        vlrMerc: 500,
+        pesoMerc: 1.0,
+        volumes: [
+          {
+            peso: 1.0,
+            altura: 0.30,
+            largura: 0.30,
+            comprimento: 0.30,
+            tipo: '', // Adicione o tipo se for necessário
+            valor: 500,
+            quantidade: 1
+          }
+        ],
+        produtos: [
+          {
+            peso: 1.0,
+            altura: 0.30,
+            largura: 0.30,
+            comprimento: 0.30,
+            valor: 500,
+            quantidade: 1
+          }
+        ],
+        servicos: ["E", "X"],
+        ordernar: 'preco'
+      };
   
-      volumes.forEach((volume, index) => {
-        Object.keys(volume).forEach(key => {
-          url.searchParams.append(`volumes[${index}][${key}]`, volume[key]);
-        });
-      });
-  
-      produtos.forEach((produto, index) => {
-        Object.keys(produto).forEach(key => {
-          url.searchParams.append(`produtos[${index}][${key}]`, produto[key]);
-        });
-      });
-  
-      servicos.forEach((servico, index) => {
-        url.searchParams.append(`servicos[${index}]`, servico);
-      });
-  
-      // Faz a requisição GET
-      const response = await fetch(url.toString(), {
-        method: 'GET',
+      const response = await fetch(url, {
+        method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`, // Inclua o token aqui
-          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Envia o token como um cabeçalho Authorization
         },
+        body: JSON.stringify(requestBody)
       });
   
       if (!response.ok) {
-        // Lança um erro se a resposta não for bem-sucedida
-        throw new Error(`Erro: ${response.statusText}`);
+        const errorText = await response.text(); // Obtenha o texto de erro, se disponível
+        throw new Error(`Erro: ${response.statusText} - ${errorText}`);
       }
   
-      const data = await response.json(); // Converte a resposta para JSON
-  
-      // Ajuste conforme a estrutura real da resposta da API
-      const { valor, tempoEstimado } = data;
-      setFrete(valor);
-      setEstimativaEntrega(tempoEstimado);
+      const data = await response.json();
+      const { vlrFrete, prazoEnt } = data; // Ajuste conforme a estrutura real da resposta da API
+      setFrete(vlrFrete);
+      setEstimativaEntrega(prazoEnt);
     } catch (error) {
       console.error('Erro ao calcular o frete:', error);
-      toast.error("Erro ao calcular o frete.");
+      toast.error(`Erro ao calcular o frete: ${error.message}`);
     }
   };
   
   useEffect(() => {
     fetchFrete();
   }, []);
-
-
-
 
   const fetchAddressData = async (cep) => {
     try {
