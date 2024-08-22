@@ -53,7 +53,7 @@ export default function Login({ isOpen, closeModal }) {
     try {
       setLoadingButton(true);
   
-      const response = await fetch('http://localhost:8082/usuario/login', {            
+      const response = await fetch('https://api.jesustyleoficial.com.br/usuario/login', {            
         
         method: 'POST',
         headers: {
@@ -112,7 +112,7 @@ export default function Login({ isOpen, closeModal }) {
     try {
       setLoadingButton(true);
   
-      const response = await axios.post('https://localhost:8082/usuarios/cadastro', { 
+      const response = await axios.post('https://api.jesustyleoficial.com.br/usuarios/cadastro', { 
         Nome: username, // Alterado para Nome
         DataNascimento: birthday, // Você pode precisar alterar isso também, se necessário
         Email: email, // Alterado para Email
@@ -152,7 +152,7 @@ export default function Login({ isOpen, closeModal }) {
 
       // Aqui você pode adicionar a lógica para enviar o email de recuperação de senha
       // Exemplo:
-      // const response = await axios.post('http://localhost:5001/Cadastro/EnviarEmailDeRedefinirSenha', { email });
+      // const response = await axios.post('http://100.25.140.211:5001/Cadastro/EnviarEmailDeRedefinirSenha', { email });
 
       setResetPasswordSuccess(true);
       toast.success("Email de recuperação enviado com sucesso!");

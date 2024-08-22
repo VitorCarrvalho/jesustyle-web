@@ -57,45 +57,45 @@ export default function Payment() {
 
     document.title = "Jesustyle | Finalizar Compra"
   }, [])
-/*
-  useEffect(() => {
-    async function fetchUserEmail() {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-
-      try {
-        const response = await fetch('https://localhost:7289/api/Autenticacao/users/details', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setEmail(data.email || '');
-        } else {
-          console.error('Erro ao obter detalhes do usuário:', await response.json());
+  /*
+    useEffect(() => {
+      async function fetchUserEmail() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login');
+          return;
         }
-      } catch (error) {
-        console.error('Erro ao fazer a requisição:', error);
+  
+        try {
+          const response = await fetch('https://100.25.140.211:7289/api/Autenticacao/users/details', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/json',
+            },
+          });
+  
+          if (response.ok) {
+            const data = await response.json();
+            setEmail(data.email || '');
+          } else {
+            console.error('Erro ao obter detalhes do usuário:', await response.json());
+          }
+        } catch (error) {
+          console.error('Erro ao fazer a requisição:', error);
+        }
       }
-    }
-
-    fetchUserEmail();
-  }, [navigate]);
-*/
+  
+      fetchUserEmail();
+    }, [navigate]);
+  */
   const fetchFrete = async () => {
     try {
-      const url = 'http://localhost:8082/transporte/simular';
-  
+      const url = 'https://api.jesustyleoficial.com.br/transporte/simular';
+
       const requestBody = {
         cepOrigem: '06509012',
-        cepDestino: '06444000',
+        cepDestino: cep,
         vlrMerc: 500,
         pesoMerc: 1.0,
         volumes: [
@@ -122,7 +122,7 @@ export default function Payment() {
         servicos: ["E", "X"],
         ordernar: 'preco'
       };
-  
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -130,12 +130,12 @@ export default function Payment() {
         },
         body: JSON.stringify(requestBody)
       });
-  
+
       if (!response.ok) {
         const errorText = await response.text(); // Obtenha o texto de erro, se disponível
         throw new Error(`Erro: ${response.statusText} - ${errorText}`);
       }
-  
+
       const data = await response.json();
       const { vlrFrete, prazoEnt } = data; // Ajuste conforme a estrutura real da resposta da API
       setFrete(vlrFrete);
@@ -145,7 +145,7 @@ export default function Payment() {
       toast.error(`Erro ao calcular o frete: ${error.message}`);
     }
   };
-  
+
   useEffect(() => {
     fetchFrete();
   }, []);
@@ -211,7 +211,7 @@ export default function Payment() {
     setCardName(value)
   }
 
-  
+
   const emailChange = (e) => {
     const value = e.target.value
     setEmail(value)
@@ -340,7 +340,7 @@ export default function Payment() {
     return phoneRegex.test(phone)
   }
 
- 
+
 
   // const handleChangeCupom = (event) => {
   //   const selectedValue = event.target.value
@@ -621,7 +621,7 @@ export default function Payment() {
               </div>
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '48%' }}>
                 <label>{'Email:'}</label>
-                <input type="text" placeholder={'Email'} value={email}  onChange={emailChange} />
+                <input type="text" placeholder={'Email'} value={email} onChange={emailChange} />
               </div>
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '34%' }}>
                 <label>Telefone:</label>

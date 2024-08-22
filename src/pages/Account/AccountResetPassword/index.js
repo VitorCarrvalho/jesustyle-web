@@ -21,7 +21,7 @@ export default function AccountResetPassword() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('https://localhost:7289/api/Auth/users/update/password', {
+      const response = await fetch('https://api.jesustyleoficial.com.br/usuario/recuperar-senha', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

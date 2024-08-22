@@ -93,7 +93,7 @@ const ProductList = ({ products }) => {
 
   const handleAddProduct = async () => {
     try {
-      const response = await fetch('https://localhost:7289/api/Produto', { // Use o URL completo aqui
+      const response = await fetch('https://100.25.140.211:7289/api/Produto', { // Use o URL completo aqui
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
