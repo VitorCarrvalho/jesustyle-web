@@ -91,7 +91,7 @@ export default function Payment() {
 */
   const fetchFrete = async () => {
     try {
-      const url = 'http://localhost:8082/transporte/simular';
+      const url = 'http://100.25.140.211:8082/transporte/simular';
   
       const requestBody = {
         cepOrigem: '06509012',

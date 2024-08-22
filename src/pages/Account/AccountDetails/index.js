@@ -33,7 +33,7 @@ export default function AccountDetails() {
             }
             const codigo = localStorage.getItem('codigo');
             try {
-                const response = await fetch('http://localhost:8082/usuarios/buscar/'+ codigo, {
+                const response = await fetch('http://http://100.25.140.211:8082/usuarios/buscar/'+ codigo, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -117,7 +117,7 @@ export default function AccountDetails() {
         };
 
         try {
-            const response = await fetch('http://localhost:8082/usuarios/update', {
+            const response = await fetch('http://100.25.140.211:8082/usuarios/update', {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
