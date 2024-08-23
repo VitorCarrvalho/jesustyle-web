@@ -120,7 +120,10 @@ export default function Login({ isOpen, closeModal }) {
         TipoUsuario:null 
       });
   
-      if (response.status === 200) {
+      if (response.status === 201) {
+        const data = response.data;
+        localStorage.setItem('tipoUsuario', data.tipoUsuario);
+        localStorage.setItem('codigo', data.codigo);
         toast.success("Cadastro realizado com sucesso!");
         navigate('/products');
         scrollToTop();
