@@ -36,6 +36,7 @@ export default function Payment() {
   const [loading, setLoading] = useState(true)
   const [loadingButton, setLoadingButton] = useState(false)
   const [isOpenModalSuccess, setIsOpenModalSuccess] = useState(false)
+  const [isOpenModalPixPayment, setIsOpenModalPixPayment] = useState(false)
   const [frete, setFrete] = useState(null);
   const [estimativaEntrega, setEstimativaEntrega] = useState('');
 
@@ -478,8 +479,7 @@ export default function Payment() {
       setLoadingButton(false)
       return
     }
-
-
+ 
     const paymentData = {
       items: cart.map(product => ({
         amount: product.price * 100,
@@ -554,6 +554,81 @@ export default function Payment() {
     }
   }
 
+    // Função para lidar com o pagamento via Pix
+    const handlePixPayment = async () => {
+      const paymentData = {
+        customer: {
+          address: {
+            country: "BR",
+            state: "SP",
+            city: "Barueri",
+            zip_code: cep,
+            line_1: `${street}, ${residentialNumber}`
+          },
+          phones: {
+            mobile_phone: {
+              country_code: "55",
+              area_code: phone.substring(1, 3),
+              number: phone.replace(/\D/g, "")
+            }
+          },
+          name: cardName,
+          type: personType,
+          email: email,
+          code: "42",
+          document: cpfOrCnpj.replace(/\D/g, ""),
+          document_type: personType === 'individual' ? 'CPF' : 'CNPJ',
+          gender: "male"
+        },
+        payments: [
+          {
+            Pix: {
+              expires_in: 3600
+            },
+            payment_method: "pix"
+          }
+        ],
+        code: "ABC123",
+        items: cart.map(product => ({
+          amount: product.price * 100,
+          description: product.name,
+          quantity: product.quantity,
+          code: "ABC"
+        })),
+        antifraud_enabled: false
+      }
+  
+      try {
+        setLoadingButton(true)
+        const response = await axios.post('https://api.pagar.me/core/v5/orders', paymentData, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic SEU_ACCESS_TOKEN'  // Coloque o token correto
+          }
+        })
+  
+        if (response.data.charges[0].last_transaction.qr_code_url) {
+          setQrCode(response.data.charges[0].last_transaction.qr_code_url)
+          setIsOpenModalPixPayment(true)
+        } else {
+          toast.error('Erro ao processar pagamento via Pix.')
+        }
+  
+      } catch (error) {
+        toast.error('Erro ao processar pagamento via Pix. Tente novamente mais tarde.')
+      } finally {
+        setLoadingButton(false)
+      }
+    }
+/*
+  const handlePayment = () => {
+    if (paymentMethod === 'credit_card') {
+      handleCardPayment()
+    } else if (paymentMethod === 'pix') {
+      handlePixPayment()
+    }
+  }
+*/
   return (
     <>
       <Header />
@@ -574,36 +649,50 @@ export default function Payment() {
         <div className='payment-container'>
           <section className='checkout-section'>
             <h1>Finalizar compra</h1>
+
             <form className='payment-form'>
               <section>
-                <h5><BsFillCreditCardFill />Dados do cartão</h5>
-                <span>Aceitamos somente cartão de crédito!*</span>
+                <h5><BsFillCreditCardFill />Método de Pagamento</h5>
+                <select onChange={handlePaymentMethodChange} value={paymentMethod}>
+                  <option value="credit_card">Cartão de Crédito</option>
+                  <option value="pix">Pix</option>
+                </select>
               </section>
 
+              /* Exibe o QR Code se o método de pagamento for Pix */
+              {paymentMethod === 'pix' && qrCode && (
+                <div className='pix_payment'>
+                  <h5>Escaneie o QR Code abaixo para realizar o pagamento via Pix:</h5>
+                  <img src={qrCode} alt="QR Code do Pix" />
+                </div>
+              )}
+            <div className='card_payment_type'>
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '48%' }}>
-                <label htmlFor="cardName">Nome no cartão:</label>
-                <input type="text" id="cardName" maxLength="19" placeholder="Nome no cartão" value={cardName} onChange={handleCardNameChange} />
-              </div>
-              <div style={{ width: window.innerWidth <= 480 ? '100%' : '50%' }}>
-                <label htmlFor="cardNumber">Número do Cartão:</label>
-                <input type="text" id="cardNumber" placeholder="Número do Cartão" value={cardNumber} onChange={handleCardNumberChange} />
-              </div>
-              <div style={{ width: window.innerWidth <= 480 ? '100%' : '32%' }}>
-                <label htmlFor="expiryDate">Data de Validade:</label>
-                <input type="text" id="expiryDate" placeholder="MM/AA" maxLength="5" value={expiryDate} onChange={handleExpiryDateChange} />
-              </div>
-              <div style={{ width: window.innerWidth <= 480 ? '100%' : '32%' }}>
-                <label htmlFor="cvv">CVV:</label>
-                <input type="text" id="cvv" maxLength="4" placeholder="CVV" value={cvv} onChange={handleCvvChange} />
-              </div>
-              <div style={{ width: window.innerWidth <= 480 ? '100%' : '32%' }}>
-                <label htmlFor="installments">Número de parcelas:</label>
-                <select id="installments" value={installments} onChange={handleInstallmentsChange}>
-                  {Array.from({ length: 10 }, (_, index) => index + 1).map((num) => (
-                    <option key={num}>{num} X de R${(total / num).toFixed(2).replace('.', ',')}</option>
-                  ))}
-                </select>
-              </div>
+                  <label htmlFor="cardName">Nome no cartão:</label>
+                  <input type="text" id="cardName" maxLength="19" placeholder="Nome no cartão" value={cardName} onChange={handleCardNameChange} />
+                </div>
+                <div style={{ width: window.innerWidth <= 480 ? '100%' : '50%' }}>
+                  <label htmlFor="cardNumber">Número do Cartão:</label>
+                  <input type="text" id="cardNumber" placeholder="Número do Cartão" value={cardNumber} onChange={handleCardNumberChange} />
+                </div>
+                <div style={{ width: window.innerWidth <= 480 ? '100%' : '32%' }}>
+                  <label htmlFor="expiryDate">Data de Validade:</label>
+                  <input type="text" id="expiryDate" placeholder="MM/AA" maxLength="5" value={expiryDate} onChange={handleExpiryDateChange} />
+                </div>
+                <div style={{ width: window.innerWidth <= 480 ? '100%' : '32%' }}>
+                  <label htmlFor="cvv">CVV:</label>
+                  <input type="text" id="cvv" maxLength="4" placeholder="CVV" value={cvv} onChange={handleCvvChange} />
+                </div>
+                <div style={{ width: window.innerWidth <= 480 ? '100%' : '32%' }}>
+                  <label htmlFor="installments">Número de parcelas:</label>
+                  <select id="installments" value={installments} onChange={handleInstallmentsChange}>
+                    {Array.from({ length: 10 }, (_, index) => index + 1).map((num) => (
+                      <option key={num}>{num} X de R${(total / num).toFixed(2).replace('.', ',')}</option>
+                    ))}
+                  </select>
+                </div>
+            </div>
+
 
               <section className='additional-details'>
                 <h5><BsFillPersonPlusFill />Dados complementares</h5>
@@ -694,6 +783,12 @@ export default function Payment() {
       <CustomModal isOpen={isOpenModalSuccess} closeModal={() => { setIsOpenModalSuccess(false) }}
         headerText="Compra realizada com sucesso!"
         paragraphText="Agradecemos por escolher nossa loja. Seu pedido está sendo processado e em breve você receberá um e-mail com todos os detalhes da sua compra."
+        spanText="Se precisar de mais informações ou suporte, não hesite em nos contatar."
+      />
+
+      <CustomModal isOpen={isOpenModalPixPayment} closeModal={() => { setIsOpenModalPixPayment(false) }}
+        headerText="Realize o pagamento através do QR e retorne a sua tela de pedidos!"
+        paragraphText="Agradecemos por escolher nossa loja. Após o pagamento do pix, seu pedido está será processado e em breve você receberá um e-mail com todos os detalhes da sua compra."
         spanText="Se precisar de mais informações ou suporte, não hesite em nos contatar."
       />
 

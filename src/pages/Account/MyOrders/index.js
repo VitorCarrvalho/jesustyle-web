@@ -18,13 +18,7 @@ const forbiddenWords = [
   "palhaço", "cabeça de vento", "paspalho"
 ]
 
-const checkoutSteps = [
-  { status: 'Pedido encomendado', icon: <FaClipboardList/>, date: '23/08/2024 12:20' },
-  { status: 'Pedido sendo preparado', icon: <FaBox/>, date: '23/08/2024 16:51' },
-  { status: 'Pedido enviado', icon: <FaTruck/>, date: '02/09/2024 14:49' },
-  { status: 'Pedido saiu para entrega', icon: <FaShippingFast/>, date: '03/09/2024 10:02' },
-  { status: 'Pedido entregue', icon: <BsFillHouseCheckFill/>, date: '03/09/2024 14:40' }
-]
+const checkoutSteps = []
 
 export default function MyOrders() {
   const [selectedTab, setSelectedTab] = useState("active")
@@ -35,11 +29,7 @@ export default function MyOrders() {
   const [review, setReview] = useState("")
   const [photo, setPhoto] = useState(null)
   const [errorMessage, setErrorMessage] = useState("")
-  const [userOrders, setUserOrders] = useState([
-    { id: 1, image: camisetaTrustInTheLordFront, name: "Camiseta Trust In The Lord", size: "M", quantity: 1, price: 169, status: "Ativo" },
-    { id: 2, image: moletomLikeJesusFront, name: "Moletom Like Jesus", size: "L", quantity: 2, price: 305, status: "Ativo" },
-    { id: 3, image: camisetaJesusLovesYouFront, name: "Camiseta Jesus Loves You", size: "L", quantity: 2, price: 169, status: "Concluído" }
-  ])
+  const [userOrders, setUserOrders] = useState([])
   const [currentStep, setCurrentStep] = useState(3)
   const [isComplete, setIsComplete] = useState(false)
   const [margins, setMargins] = useState({ marginLeft: 0, marginRight: 0 })
@@ -237,8 +227,8 @@ function OrderDetails({ steps, currentStep, isComplete, margins, stepRef, onNext
       <h3>Suporte ao Cliente</h3>
       <div className="customer-support">
         <p>Precisa de ajuda? Entre em contato com nosso suporte:</p>
-        <p>Telefone: <span>0800-123-456</span></p>
-        <p>Email: <span>suporte@exemplo.com</span></p>
+        <p>Telefone: <span>11 96214-9094</span></p>
+        <p>Email: <span>suporte@jesustyleoficial.com.br</span></p>
       </div>
     </div>
   )
