@@ -20,7 +20,7 @@ export default function Payment() {
   const [email, setEmail] = useState('')
   const [expiryDate, setExpiryDate] = useState('')
   const [cvv, setCvv] = useState('')
-  const [installments, setInstallments] = useState('10 X de R$10,00')
+  const [installments, setInstallments] = useState('')
   const [personType, setPersonType] = useState('individual')
   const [cpfOrCnpj, setCpfOrCnpj] = useState('')
   const [phone, setPhone] = useState('')

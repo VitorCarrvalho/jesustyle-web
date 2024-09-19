@@ -9,6 +9,7 @@ export default function AccountDetails() {
         birthday: '',
         cpf: '',
         phone: '',
+        password:'',
         tipoUsuario: '' // Armazena o tipo de usuário (Admin ou User)
     });
 
@@ -33,7 +34,8 @@ export default function AccountDetails() {
             }
             const codigo = localStorage.getItem('codigo');
             try {
-                const response = await fetch('https://api.jesustyleoficial.com.br/usuarios/buscar/'+ codigo, {
+                //const response = await fetch('https://api.jesustyleoficial.com.br/usuarios/buscar/'
+                const response = await fetch('http://localhost:8082/usuarios/buscar/'+ codigo, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -110,14 +112,17 @@ export default function AccountDetails() {
         };
 
         const requestPayload = {
+            Codigo: localStorage.getItem('codigo'),
             Nome: cleanUserDetails.fullName,
             DataNascimento: cleanUserDetails.birthday ? new Date(cleanUserDetails.birthday) : null,
             CPF: cleanUserDetails.cpf,
-            Telefone: cleanUserDetails.phone
+            Telefone: cleanUserDetails.phone,
+            Senha: cleanUserDetails.password
         };
 
         try {
-            const response = await fetch('https://api.jesustyleoficial.com.br/usuarios/update', {
+            //const response = await fetch('https://api.jesustyleoficial.com.br/usuarios/update'
+            const response = await fetch('http://localhost:8082/usuarios/update', {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
