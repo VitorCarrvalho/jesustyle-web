@@ -1,143 +1,115 @@
-import React, { useEffect, useState } from 'react'
-import './payment.scss'
-import { Link, useNavigate } from "react-router-dom"
-import { Breadcrumb, BreadcrumbItem } from "@chakra-ui/react"
-import { toast } from 'react-toastify'
-import axios from 'axios'
-import Header from '../../components/Header'
-import Footer from '../../components/Footer'
-import CustomModal from '../../components/CustomModal'
-import pagarme from '../../assets/seloPagarX.png'
-import { Spinner } from '@chakra-ui/react'
-import { FaAngleRight } from "react-icons/fa"
-import { BsFillCreditCardFill, BsFillPersonPlusFill } from 'react-icons/bs'
+import React, { useEffect, useState } from 'react';
+import './payment.scss';
+import { Link, useNavigate } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Spinner } from "@chakra-ui/react";
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import CustomModal from '../../components/CustomModal';
+import pagarme from '../../assets/seloPagarX.png';
+import { FaAngleRight } from "react-icons/fa";
+import { BsFillCreditCardFill, BsFillPersonPlusFill } from 'react-icons/bs';
+import 'core-js/stable';
+import { useOpenPix } from '@openpix/react';
+import QRCode from 'qrcode.react';
 
-export default function Payment() {
-  const navigate = useNavigate()
-  const [cart, setCart] = useState([])
-  const [cardName, setCardName] = useState('')
-  const [cardNumber, setCardNumber] = useState('')
-  const [email, setEmail] = useState('')
-  const [expiryDate, setExpiryDate] = useState('')
-  const [cvv, setCvv] = useState('')
-  const [installments, setInstallments] = useState('')
-  const [personType, setPersonType] = useState('individual')
-  const [cpfOrCnpj, setCpfOrCnpj] = useState('')
-  const [phone, setPhone] = useState('')
-  const [cep, setCep] = useState('')
-  const [residentialNumber, setResidentialNumber] = useState('')
-  const [termsAccepted, setTermsAccepted] = useState(false)
-  const [street, setStreet] = useState('')
-  const [cupom, setCupom] = useState('')
-  const [desconto, setDesconto] = useState(0)
-  const [botaoTexto, setBotaoTexto] = useState('Validar')
-  const [botaoCor, setBotaoCor] = useState('')
-  const botaoClassName = botaoCor === 'green' ? 'botao-validar' : (botaoCor === 'red' ? 'botao-remover' : '')
-  const [loading, setLoading] = useState(true)
-  const [loadingButton, setLoadingButton] = useState(false)
-  const [isOpenModalSuccess, setIsOpenModalSuccess] = useState(false)
-  const [frete, setFrete] = useState(null);
+const Payment = () => {
+  const [cupom, setCupom] = useState('');
+  const [desconto, setDesconto] = useState(0);
+  const [botaoTexto, setBotaoTexto] = useState('Validar');
+  const [botaoCor, setBotaoCor] = useState('');
+  const botaoClassName = botaoCor === 'green' ? 'botao-validar' : (botaoCor === 'red' ? 'botao-remover' : '');
+  const [loading, setLoading] = useState(true);
   const [estimativaEntrega, setEstimativaEntrega] = useState('');
+  const [loadingButton, setLoadingButton] = useState(false);
+  const [pixPaymentUrl, setPixPaymentUrl] = useState('');
+  const [isOpenModalSuccess, setIsOpenModalSuccess] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [cardName, setCardName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [installments, setInstallments] = useState(1);
+  const [cpfOrCnpj, setCpfOrCnpj] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [cep, setCep] = useState('');
+  const [residentialNumber, setResidentialNumber] = useState('');
+  const [street, setStreet] = useState('');
+  const [addressData, setAddressData] = useState({});
+  const [cart, setCart] = useState([]);
+  const [frete, setFrete] = useState(0);
+  const [personType, setPersonType] = useState('individual');
+  const [paymentMethod, setPaymentMethod] = useState('credit_card');
 
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const cartItems = JSON.parse(localStorage.getItem("cart")) || []
-        setCart(cartItems)
-
+        const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+        setCart(cartItems);
       } catch (error) {
-
+        console.error('Erro ao carregar o carrinho:', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    fetchData()
+    fetchData();
+    document.title = 'Jesustyle | Finalizar Compra';
+  }, []);
 
-    document.title = "Jesustyle | Finalizar Compra"
-  }, [])
-  /*
-    useEffect(() => {
-      async function fetchUserEmail() {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          navigate('/login');
-          return;
-        }
-  
-        try {
-          const response = await fetch('https://100.25.140.211:7289/api/Autenticacao/users/details', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Accept': 'application/json',
-            },
-          });
-  
-          if (response.ok) {
-            const data = await response.json();
-            setEmail(data.email || '');
-          } else {
-            console.error('Erro ao obter detalhes do usuário:', await response.json());
-          }
-        } catch (error) {
-          console.error('Erro ao fazer a requisição:', error);
-        }
-      }
-  
-      fetchUserEmail();
-    }, [navigate]);
-  */
   const fetchFrete = async () => {
+    const cleanCep = cep.replace(/\D/g, '');
+    if (!cleanCep || cleanCep.length !== 8) return;
+
     try {
-      const url = 'https://api.jesustyleoficial.com.br/transporte/simular';
+      const url = 'http://localhost:8082/transporte/simular';
+      const total = cart.reduce((acc, curr) => acc + curr.price * curr.quantity, 0);
 
       const requestBody = {
         cepOrigem: '06509012',
-        cepDestino: cep,
-        vlrMerc: 500,
+        cepDestino: cleanCep,
+        vlrMerc: total,
         pesoMerc: 1.0,
-        volumes: [
-          {
-            peso: 1.0,
-            altura: 0.30,
-            largura: 0.30,
-            comprimento: 0.30,
-            tipo: '', // Adicione o tipo se for necessário
-            valor: 500,
-            quantidade: 1
-          }
-        ],
-        produtos: [
-          {
-            peso: 1.0,
-            altura: 0.30,
-            largura: 0.30,
-            comprimento: 0.30,
-            valor: 500,
-            quantidade: 1
-          }
-        ],
-        servicos: ["E", "X"],
-        ordernar: 'preco'
+        volumes: [{
+          peso: 1.0,
+          altura: 0.30,
+          largura: 0.30,
+          comprimento: 0.30,
+          tipo: '',
+          valor: total,
+          quantidade: 1,
+        }],
+        produtos: [{
+          peso: 1.0,
+          altura: 0.30,
+          largura: 0.30,
+          comprimento: 0.30,
+          valor: total,
+          quantidade: 1,
+        }],
+        servicos: ['E', 'X'],
+        ordernar: 'preco',
       };
 
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
-        const errorText = await response.text(); // Obtenha o texto de erro, se disponível
+        const errorText = await response.text();
         throw new Error(`Erro: ${response.statusText} - ${errorText}`);
       }
 
       const data = await response.json();
-      const { vlrFrete, prazoEnt } = data; // Ajuste conforme a estrutura real da resposta da API
+      const { vlrFrete, prazoEnt } = data;
       setFrete(vlrFrete);
       setEstimativaEntrega(prazoEnt);
     } catch (error) {
@@ -146,420 +118,288 @@ export default function Payment() {
     }
   };
 
-  useEffect(() => {
-    fetchFrete();
-  }, []);
-
   const fetchAddressData = async (cep) => {
-    try {
-      const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
-      const { data } = response
+    const cleanCep = cep.replace(/\D/g, '');
+    if (cleanCep.length !== 8) {
+      throw new Error('CEP deve ter 8 dígitos.');
+    }
 
-      if (!data.erro) {
-        return {
-          street: data.logradouro,
-          neighborhood: data.bairro,
-          city: data.localidade,
-          state: data.uf,
-        }
+    try {
+      const response = await axios.get(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      if (response.data && !response.data.erro) {
+        return response.data;
       } else {
-        throw new Error("CEP não encontrado.")
+        throw new Error('CEP não encontrado.');
       }
     } catch (error) {
-      toast.error("Não foi possível encontrar o endereço para o CEP fornecido.")
-      throw error
+      console.error('Erro ao buscar dados do endereço:', error);
+      toast.error('Erro ao buscar dados do endereço. Tente novamente.');
+      throw error;
     }
-  }
+  };
 
   useEffect(() => {
     const fetchAndSetAddress = async () => {
-      if (cep && residentialNumber) {
+      if (cep.length === 8 && residentialNumber) {
         try {
-          const addressData = await fetchAddressData(cep)
-          setStreet(`${addressData.street}, ${residentialNumber}, ${addressData.city}/${addressData.state} - ${cep}`)
+          const addressData = await fetchAddressData(cep);
+          setStreet(`${addressData.logradouro}, ${residentialNumber}, ${addressData.localidade}/${addressData.uf} - ${cep}`);
+          fetchFrete();
         } catch (error) {
-          setStreet('')
+          setStreet('');
         }
       }
-    }
+    };
 
-    fetchAndSetAddress()
-  }, [cep, residentialNumber])
+    fetchAndSetAddress();
+  }, [cep, residentialNumber]);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const total = cart.reduce((acc, curr) => acc + curr.price * curr.quantity, 0)
+  const total = cart.reduce((acc, curr) => acc + curr.price * curr.quantity, 0);
 
   const formatPrice = (value) => {
-    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-  }
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  };
 
   const handleCardNameChange = (e) => {
-    const value = e.target.value.replace(/[^a-zA-Z\s]/g, '')
-    setCardName(value)
-  }
-
+    const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+    setCardName(value);
+  };
 
   const emailChange = (e) => {
-    const value = e.target.value
-    setEmail(value)
-  }
+    const value = e.target.value;
+    setEmail(value);
+  };
 
   const formatCardNumber = (number) => {
-    return number.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim().slice(0, 19)
-  }
+    return number.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim().slice(0, 19);
+  };
 
   const handleCardNumberChange = (e) => {
-    const value = formatCardNumber(e.target.value)
-    setCardNumber(value)
-  }
+    const value = formatCardNumber(e.target.value);
+    setCardNumber(value);
+  };
 
   const formatExpiryDate = (expiryDate) => {
-    return expiryDate.replace(/\D/g, '').replace(/(\d{2})(\d{0,2})/, '$1/$2').slice(0, 5)
-  }
+    return expiryDate.replace(/\D/g, '').replace(/(\d{2})(\d{0,2})/, '$1/$2').slice(0, 5);
+  };
 
   const handleExpiryDateChange = (e) => {
-    const value = formatExpiryDate(e.target.value)
-    setExpiryDate(value)
-  }
+    const value = formatExpiryDate(e.target.value);
+    setExpiryDate(value);
+  };
 
   const formatCvv = (cvv) => {
-    return cvv.replace(/\D/g, '').slice(0, 4)
-  }
+    return cvv.replace(/\D/g, '').slice(0, 4);
+  };
 
   const handleCvvChange = (e) => {
-    const value = formatCvv(e.target.value)
-    setCvv(value)
-  }
+    const value = formatCvv(e.target.value);
+    setCvv(value);
+  };
 
   const formatPhone = (phone) => {
-    return phone.replace(/\D/g, '').replace(/^(\d{2})(\d{1,5})(\d{1,4})$/, '($1) $2-$3').trim()
-  }
+    return phone.replace(/\D/g, '').replace(/^(\d{2})(\d{1,5})(\d{1,4})$/, '($1) $2-$3').trim();
+  };
 
   const handlePhoneChange = (e) => {
-    const value = formatPhone(e.target.value)
-    setPhone(value)
-  }
+    const value = formatPhone(e.target.value);
+    setPhone(value);
+  };
 
-  const isValidCardName = (name) => {
-    return name.trim() !== ''
-  }
+  const isValidCardName = (name) => name.trim() !== '';
 
   const isValidCardNumber = (number) => {
-    const cleanNumber = number.replace(/\s+/g, '')
-    const cardNumberRegex = /^\d{13,19}$/
-    return cardNumberRegex.test(cleanNumber)
-  }
+    const cleanNumber = number.replace(/\s+/g, '');
+    const cardNumberRegex = /^\d{13,19}$/;
+    return cardNumberRegex.test(cleanNumber);
+  };
 
   const isValidExpiryDate = (expiryDate) => {
-    const [month, year] = expiryDate.split('/').map(Number)
-    const now = new Date()
-    const currentYear = now.getFullYear() % 100
-    const currentMonth = now.getMonth() + 1
+    const [month, year] = expiryDate.split('/').map(Number);
+    const now = new Date();
+    const currentYear = now.getFullYear() % 100;
+    const currentMonth = now.getMonth() + 1;
 
-    if (month < 1 || month > 12 || year < currentYear || (year === currentYear && month < currentMonth)) {
-      return false
-    }
+    return !(month < 1 || month > 12 || year < currentYear || (year === currentYear && month < currentMonth));
+  };
 
-    return true
-  }
-
-  const isValidCvv = (cvv) => {
-    const cvvRegex = /^\d{3,4}$/
-    return cvvRegex.test(cvv)
-  }
+  const isValidCvv = (cvv) => /^\d{3,4}$/.test(cvv);
 
   const handleInstallmentsChange = (e) => {
-    setInstallments(e.target.value)
-  }
+    setInstallments(e.target.value);
+  };
 
   useEffect(() => {
-    setCpfOrCnpj('')
-  }, [personType])
+    setCpfOrCnpj('');
+  }, [personType]);
 
   const isValidCPF = (cpf) => {
-    cpf = cpf.replace(/\D/g, '')
+    cpf = cpf.replace(/\D/g, '');
 
-    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false
+    if (cpf.length !== 11) return false;
 
-    let sum = 0
-    let remainder
+    const validate = (number, factor) => {
+      let sum = 0;
 
-    for (let i = 1; i <= 9; i++) sum += parseInt(cpf.charAt(i - 1)) * (11 - i)
-    remainder = (sum * 10) % 11
+      for (let i = 0; i < factor; i++) {
+        sum += number[i] * (factor + 1 - i);
+      }
 
-    if (remainder === 10 || remainder === 11) remainder = 0
-    if (remainder !== parseInt(cpf.charAt(9))) return false
+      const rest = (sum * 10) % 11;
 
-    sum = 0;
-    for (let i = 1; i <= 10; i++) sum += parseInt(cpf.charAt(i - 1)) * (12 - i)
-    remainder = (sum * 10) % 11
+      return rest === number[factor];
+    };
 
-    if (remainder === 10 || remainder === 11) remainder = 0
-    return remainder === parseInt(cpf.charAt(10))
-  }
+    const cpfArray = cpf.split('').map(Number);
+    return validate(cpfArray, 9) && validate(cpfArray, 10);
+  };
 
   const isValidCNPJ = (cnpj) => {
-    cnpj = cnpj.replace(/\D/g, '')
+    cnpj = cnpj.replace(/\D/g, '');
 
-    if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false
+    if (cnpj.length !== 14) return false;
 
-    let sum = 0
-    let remainder
+    const validate = (number, factor) => {
+      let sum = 0;
 
-    for (let i = 0; i < 12; i++) sum += parseInt(cnpj.charAt(i)) * (5 - (i % 8))
-    remainder = sum % 11
-    if (remainder < 2) remainder = 0
-    else remainder = 11 - remainder
-
-    if (remainder !== parseInt(cnpj.charAt(12))) return false
-
-    sum = 0
-    for (let i = 0; i < 13; i++) sum += parseInt(cnpj.charAt(i)) * (6 - (i % 8))
-    remainder = sum % 11
-    if (remainder < 2) remainder = 0
-    else remainder = 11 - remainder
-
-    return remainder === parseInt(cnpj.charAt(13))
-  }
-
-  const isValidPhone = (phone) => {
-    const phoneRegex = /^\(?\d{2}\)?[\s-]?\d{4,5}[\s-]?\d{4}$/
-    return phoneRegex.test(phone)
-  }
-
-
-
-  // const handleChangeCupom = (event) => {
-  //   const selectedValue = event.target.value
-  //   setCupom(selectedValue)
-  // }
-
-  // const handleBotaoClick = () => {
-  //   if (botaoTexto === 'Validar') {
-  //     if (cupomValido(cupom)) {
-  //       aplicarDesconto(cupom)
-  //       setBotaoTexto('Remover')
-  //       setBotaoCor('red')
-  //     } else {
-  //       alert('Cupom inválido')
-  //     }
-  //   } else if (botaoTexto === 'Remover') {
-  //     removerDesconto()
-  //     setCupom('')
-  //     setBotaoTexto('Validar')
-  //     setBotaoCor('')
-  //   }
-  // }
-
-  // const cupomValido = (cupom) => {
-  //   const cuponsValidos = ['DESCONTO10', 'PROMO20']
-  //   return cuponsValidos.includes(cupom)
-  // }
-
-  // const aplicarDesconto = (cupom) => {
-  //   let descontoValor = 0
-  //   if (cupom === 'DESCONTO10') {
-  //     descontoValor = total * 0.1
-  //   } else if (cupom === 'PROMO20') {
-  //     descontoValor = total * 0.2
-  //   }
-  //   setDesconto(descontoValor)
-  //   setCart(cart.map(product => ({
-  //     ...product,
-  //     price: product.price - (product.price * (descontoValor / total))
-  //   })))
-  // }
-
-  // const removerDesconto = () => {
-  //   setCart(cart.map(product => {
-  //     if (cupom === 'DESCONTO10') {
-  //       return { ...product, price: product.price / 0.9 }
-  //     } else if (cupom === 'PROMO20') {
-  //       return { ...product, price: product.price / 0.8 }
-  //     }
-  //     return product
-  //   }))
-  //   setDesconto(0)
-  // }
-
-  async function handlePayment() {
-    const fieldsToCheck = [
-      { field: cardName, message: 'Por favor, preencha o nome no cartão.' },
-      { field: cardNumber, message: 'Por favor, preencha o número do cartão.' },
-      { field: expiryDate, message: 'Por favor, preencha a data de validade.' },
-      { field: cvv, message: 'Por favor, preencha o CVV.' },
-      { field: installments, message: 'Por favor, selecione o número de parcelas.' },
-      { field: cpfOrCnpj, message: personType === 'individual' ? 'Por favor, preencha o CPF.' : 'Por favor, preencha o CNPJ.' },
-      { field: email, message: 'Por favor, preencha o email.' },
-      { field: phone, message: 'Por favor, preencha o telefone.' },
-      { field: cep, message: 'Por favor, preencha o CEP.' },
-      { field: residentialNumber, message: 'Por favor, preencha o número residencial.' }
-    ]
-
-    for (const field of fieldsToCheck) {
-      if (!field.field) {
-        toast.warning(field.message)
-        setLoadingButton(false)
-        return
+      for (let i = 0; i < factor; i++) {
+        sum += number[i] * (factor + 1 - i);
       }
+
+      const rest = sum % 11;
+
+      return rest < 2 ? 0 : 11 - rest === number[factor];
+    };
+
+    const cnpjArray = cnpj.split('').map(Number);
+    return validate(cnpjArray, 12) && validate(cnpjArray, 13);
+  };
+
+  const handlePayment = async () => {
+    // Validações
+    if (!cardName || !cardNumber || !expiryDate || !cvv || !installments || !cpfOrCnpj || !email || !phone || !cep || !residentialNumber) {
+      toast.warning('Por favor, preencha todos os campos obrigatórios.');
+      return;
     }
 
-    if (!isValidCardName(cardName)) {
-      toast.warning('Por favor, preencha o nome no cartão.')
-      setLoadingButton(false)
-      return
-    }
+    setLoadingButton(true);
 
-    if (!isValidCardNumber(cardNumber)) {
-      toast.warning('Por favor, preencha um número de cartão válido.')
-      setLoadingButton(false)
-      return
-    }
+    // Calcular o total -----------------==============================================================================================================================================
 
-    if (!isValidExpiryDate(expiryDate)) {
-      toast.warning('Por favor, preencha uma data de validade válida.')
-      setLoadingButton(false)
-      return
-    }
-
-    if (!isValidCvv(cvv)) {
-      toast.warning('Por favor, preencha um CVV válido.')
-      setLoadingButton(false)
-      return
-    }
-
-    if (personType === 'individual' && !isValidCPF(cpfOrCnpj)) {
-      toast.warning('CPF inválido.')
-      setLoadingButton(false)
-      return
-    }
-
-    if (personType === 'legal_entity' && !isValidCNPJ(cpfOrCnpj)) {
-      toast.warning('CNPJ inválido.')
-      setLoadingButton(false)
-      return
-    }
-
-    if (!isValidPhone(phone)) {
-      toast.warning('Por favor, preencha um telefone válido.')
-      setLoadingButton(false)
-      return
-    }
-
-    let addressData = {
-      street: '',
-      city: '',
-      state: ''
-    }
-
-    try {
-      addressData = await fetchAddressData(cep)
-    } catch (error) {
-      toast.warning('Endereço não encontrado. Verifique o CEP.')
-      setLoadingButton(false)
-      return
-    }
-
-    if (!termsAccepted) {
-      toast.warning('Você deve aceitar os Termos de Serviço para finalizar a compra.')
-      setLoadingButton(false)
-      return
-    }
-
-
-    const paymentData = {
-      items: cart.map(product => ({
-        amount: product.price * 100,
-        description: product.name,
-        quantity: product.quantity,
-        code: "CAMISETACODE"
-      })),
-      customer: {
-        name: cardName,
-        email: email,
-        document: cpfOrCnpj.replace(/\D/g, ""),
-        type: personType,
-        phones: {
-          home_phone: {
-            country_code: "55",
-            area_code: phone.substring(1, 3),
-            number: phone.replace(/\D/g, "")
-          }
+        const handlePayment = async () => {
+        setLoadingButton(true);
+      
+        // Verifique se o carrinho está vazio
+        if (!cart || cart.length === 0) {
+          toast.error('Seu carrinho está vazio.');
+          setLoadingButton(false);
+          return;
         }
-      },
-      payments: [
-        {
-          payment_method: "credit_card",
-          credit_card: {
-            installments: parseInt(installments),
-            statement_descriptor: "LJJESUSTYLE",
-            card: {
-              number: cardNumber.replace(/\D/g, ""),
-              holder_name: cardName,
-              exp_month: parseInt(expiryDate.substring(0, 2)),
-              exp_year: parseInt(expiryDate.substring(3, 5)) + 2000,
-              cvv: cvv,
-              billing_address: {
-                line_1: `${addressData.street}, ${residentialNumber}`,
-                zip_code: cep.replace(/\D/g, ""),
-                city: addressData.city,
-                state: addressData.state,
-                country: "BR"
+      
+        // Calcule o total
+        const total = cart.reduce((acc, curr) => acc + curr.price * curr.quantity, 0) + (frete || 0);
+      
+        // Verifique se o pagamento é via Pix
+        if (paymentMethod === 'pix') {
+          const pixPayload = {
+            correlationID: 'myCorrelationID',
+            value: total * 100, // Valor total em centavos
+            comment: 'Pagamento da compra',
+          };
+      
+          try {
+            const response = await axios.post('https://api.openpix.com.br/api/v1/charge', pixPayload, {
+              headers: {
+                'Authorization': 'Q2xpZW50X0lkXzgwMWRmMzgwLWRjOWItNDEzOS04YzRmLTAxNWFkNDA2MGNhZjpDbGllbnRfU2VjcmV0XzJ3c1VXa1Z6OFZ0UnJjb1orcjR3eUZtcUtpUHV4VDNVMGlhcEhpdGs5NmM9', // Insira seu token aqui
+                'Content-Type': 'application/json',
+              },
+            });
+      
+            const charge = response.data;
+            setPixPaymentUrl(charge.qrCode); // Armazena a URL do QR Code
+            toast.success('QR Code gerado com sucesso!');
+          } catch (error) {
+            console.error('Erro ao criar a cobrança Pix:', error);
+            toast.error('Erro ao gerar QR Code. Tente novamente.');
+          }
+        } else {
+        // Caso de pagamento por cartão de crédito
+        const paymentData = {
+          items: cart.map(product => ({
+            amount: product.price * 100,
+            description: product.name,
+            quantity: product.quantity,
+            code: "CAMISETACODE"
+          })),
+          customer: {
+            name: cardName,
+            email: email,
+            document: cpfOrCnpj.replace(/\D/g, ""),
+            type: personType,
+            phones: {
+              home_phone: {
+                country_code: "55",
+                area_code: phone.substring(1, 3),
+                number: phone.replace(/\D/g, '')
               }
             }
+          },
+          payments: [{
+            payment_method: "credit_card",
+            credit_card: {
+              installments: parseInt(installments),
+              statement_descriptor: "LJJESUSTYLE",
+              card: {
+                number: cardNumber.replace(/\D/g, ''),
+                holder_name: cardName,
+                exp_month: parseInt(expiryDate.substring(0, 2)),
+                exp_year: parseInt(expiryDate.substring(3, 5)) + 2000,
+                cvv: cvv,
+                billing_address: {
+                  line_1: `${street}`,
+                  zip_code: cep.replace(/\D/g, ''),
+                  city: addressData.localidade,
+                  state: addressData.uf,
+                  country: "BR"
+                }
+              }
+            }
+          }]
+        };
+
+        try {
+          const response = await axios.post('/core/v5/orders', paymentData, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Basic Seu_Token_Aqui' // Insira seu token aqui
+            }
+          });
+
+          if (response.data.status !== 'paid') {
+            const errorMessages = response.data.errors?.payments.map(err => err[0]).join(', ') || 'Erro ao processar pagamento. Tente novamente.';
+            toast.error(errorMessages);
+            return;
           }
+
+          setIsOpenModalSuccess(true);
+          await new Promise(resolve => setTimeout(resolve, 4000));
+          localStorage.removeItem("cart");
+          navigate('/products');
+
+        } catch (error) {
+          console.error('Erro ao processar pagamento:', error.response ? error.response.data : error.message);
+          toast.error('Erro ao processar pagamento. Tente novamente mais tarde.');
         }
-      ]
-    }
-
-    try {
-      setLoadingButton(true)
-
-      const response = await axios.post('/core/v5/orders', paymentData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Basic c2tfdGVzdF80ZTI3MDA4ZTE0YzI0MTY0YmFkNmU3ZmRiZmRkOWRlZTo='
-        }
-      })
-
-      if (response.data.status === 'paid') {
-        console.log(paymentData)
-        setIsOpenModalSuccess(true)
-        await new Promise(resolve => setTimeout(resolve, 4000))
-        localStorage.removeItem("cart")
-        navigate('/products')
-
-      } else {
-        toast.error('Erro ao processar pagamento. Tente novamente.')
       }
 
-    } catch (error) {
-      toast.error('Erro ao processar pagamento. Tente novamente mais tarde.')
-
-    } finally {
-      setLoadingButton(false)
-    }
+      setLoadingButton(false);
+    };
   }
-
   return (
     <>
       <Header />
-
       <main className='payment'>
-        {<Breadcrumb className="breadcrumb" spacing="8px" separator={<FaAngleRight />}>
+        <Breadcrumb className="breadcrumb" spacing="8px" separator={<FaAngleRight />}>
           <BreadcrumbItem className="breadcrumb-item">
             <Link to={`/products`}>Produtos</Link>
           </BreadcrumbItem>
@@ -569,17 +409,13 @@ export default function Payment() {
           <BreadcrumbItem className="breadcrumb-item">
             <Link className="active">Finalização da Compra</Link>
           </BreadcrumbItem>
-        </Breadcrumb>}
+        </Breadcrumb>
 
         <div className='payment-container'>
           <section className='checkout-section'>
             <h1>Finalizar compra</h1>
             <form className='payment-form'>
-              <section>
-                <h5><BsFillCreditCardFill />Dados do cartão</h5>
-                <span>Aceitamos somente cartão de crédito!*</span>
-              </section>
-
+              {/* Campos do formulário */}
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '48%' }}>
                 <label htmlFor="cardName">Nome no cartão:</label>
                 <input type="text" id="cardName" maxLength="19" placeholder="Nome no cartão" value={cardName} onChange={handleCardNameChange} />
@@ -605,6 +441,7 @@ export default function Payment() {
                 </select>
               </div>
 
+              {/* Dados complementares */}
               <section className='additional-details'>
                 <h5><BsFillPersonPlusFill />Dados complementares</h5>
               </section>
@@ -620,12 +457,12 @@ export default function Payment() {
                 <input type="text" placeholder={personType === 'individual' ? 'CPF' : 'CNPJ'} maxLength={personType === 'individual' ? "11" : "14"} value={cpfOrCnpj} onChange={(e) => setCpfOrCnpj(e.target.value)} />
               </div>
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '48%' }}>
-                <label>{'Email:'}</label>
-                <input type="text" placeholder={'Email'} value={email} onChange={emailChange} />
+                <label>Email:</label>
+                <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '34%' }}>
                 <label>Telefone:</label>
-                <input type="tel" placeholder="(**) *****-****" maxLength={15} value={phone} onChange={handlePhoneChange} />
+                <input type="tel" placeholder="(**) *****-****" maxLength={15} value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '34%' }}>
                 <label>CEP:</label>
@@ -641,8 +478,7 @@ export default function Payment() {
           <section className='purchase-details'>
             <h1>Resumo da Compra</h1>
             {street && (<p className="purchase-details-p">Local de Entrega: <span>{street}</span></p>)}
-            {<p className='purchase-details-p'>Entrega Estimada: <span></span></p>}
-            {street && (<p className='total-diviser purchase-details-p'></p>)}
+            <p className='purchase-details-p'><span></span></p>
             <aside className="product-body">
               <ul>
                 {cart.map(product => (
@@ -658,46 +494,53 @@ export default function Payment() {
                 ))}
               </ul>
             </aside>
-            <p className='total-diviser purchase-details-p'></p>
             <p className='purchase-details-p'>Parcelamento: <span>{installments}</span></p>
             <p className='purchase-details-p' style={{ display: 'flex', justifyContent: 'space-between' }}>Total: <span>{formatPrice(total)}</span></p>
             <p className='purchase-details-p' style={{ display: 'flex', justifyContent: 'space-between' }}>Frete: <span>{formatPrice(frete || 0)}</span></p>
 
-
-
-
-
-
-            {/* <p className='total purchase-details-p'>Total: <span>
-                {desconto > 0 && <h6 className='perc-desconto'>- R$ {desconto.toFixed(2).replace('.', ',')}</h6>}
-                R$ {(total - desconto).toFixed(2).replace('.', ',')}
-              </span>
-            </p> */}
-            {/* <div className='cupom-de-desconto'>
-              <p>Código de cupom</p>
-              <div>
-                <input type='text' value={cupom} onChange={handleChangeCupom}/>
-                <button className={botaoClassName} onClick={handleBotaoClick}>{botaoTexto}</button>
-              </div>
-            </div> */}
-            <img className='purchase-details-img' src={pagarme} />
+            <img className='purchase-details-img' src={pagarme} alt="Pagar.me" />
             <div>
-              <label><input type='checkbox' checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} />Ao marcar esta opção, você concorda com os <a href='#'>Termos de Serviço</a>.</label>
+              <label>
+                <input
+                  type='checkbox'
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                />
+                Ao marcar esta opção, você concorda com os <a href='#'>Termos de Serviço</a>.
+              </label>
             </div>
-            <button type='button' onClick={handlePayment} disabled={loadingButton}>
+            <button
+              type='button'
+              onClick={handlePayment}
+              disabled={loadingButton}
+            >
               {loadingButton ? <Spinner className="spinner-button" speed='0.70s' /> : 'Finalizar Compra'}
             </button>
+              
+
+            
+            <button 
+              type="button"
+              onClick={() => {
+                setPaymentMethod('pix'); // Define o método de pagamento como Pix
+                handlePayment('charge'); // Chama a função para gerar o QR Code
+              }}
+              disabled={loadingButton}
+            >
+              Pagar com Pix - Gerar QR Code
+            </button>
+
+
+            {pixPaymentUrl && (
+              <a href={pixPaymentUrl} target="_blank" rel="noopener noreferrer">Ver QR Code</a>
+            )}
           </section>
         </div>
       </main>
 
-      <CustomModal isOpen={isOpenModalSuccess} closeModal={() => { setIsOpenModalSuccess(false) }}
-        headerText="Compra realizada com sucesso!"
-        paragraphText="Agradecemos por escolher nossa loja. Seu pedido está sendo processado e em breve você receberá um e-mail com todos os detalhes da sua compra."
-        spanText="Se precisar de mais informações ou suporte, não hesite em nos contatar."
-      />
-
       <Footer />
     </>
-  )
-}
+  );
+};
+
+export default Payment;
