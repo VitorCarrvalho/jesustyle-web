@@ -52,8 +52,8 @@ export default function Login({ isOpen, closeModal }) {
   
     try {
       setLoadingButton(true);
-  //const response = await fetch('https://api.jesustyleoficial.com.br/usuario/login'
-      const response = await fetch('http://localhost:8082/usuario/login', {            
+  
+      const response = await fetch('https://api.jesustyleoficial.com.br/usuario/login', {            
         
         method: 'POST',
         headers: {
@@ -112,9 +112,7 @@ export default function Login({ isOpen, closeModal }) {
     try {
       setLoadingButton(true);
   
-      //const response = await axios.post('https://api.jesustyleoficial.com.br/usuarios/cadastro', { 
-        const response = await axios.post('http://localhost:8082/usuarios/cadastro', { 
-
+      const response = await axios.post('https://api.jesustyleoficial.com.br/usuarios/cadastro', { 
         Nome: username, // Alterado para Nome
         DataNascimento: birthday, // Você pode precisar alterar isso também, se necessário
         Email: email, // Alterado para Email
