@@ -40,7 +40,10 @@
         text-shadow: 1px 1px 8px var(--shadow);
       }
     }
-
+    .spacing {
+      margin-bottom: 16px; /* Ajuste o valor conforme necessário */
+    }
+    
     .payment-form{
       background-color: var(--background);
       filter: brightness(1.2);

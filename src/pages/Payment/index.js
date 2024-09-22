@@ -42,6 +42,8 @@ const Payment = () => {
   const [frete, setFrete] = useState(0);
   const [personType, setPersonType] = useState('individual');
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
+  const [qrCodeImage, setQrCodeImage] = useState('');
+
 
   const navigate = useNavigate();
 
@@ -284,117 +286,123 @@ const Payment = () => {
 
     setLoadingButton(true);
 
-    // Calcular o total -----------------==============================================================================================================================================
+    const total = calculateTotal(); // Calcule o total uma vez
 
-        const handlePayment = async () => {
-        setLoadingButton(true);
-      
-        // Verifique se o carrinho está vazio
-        if (!cart || cart.length === 0) {
-          toast.error('Seu carrinho está vazio.');
-          setLoadingButton(false);
-          return;
-        }
-      
-        // Calcule o total
-        const total = cart.reduce((acc, curr) => acc + curr.price * curr.quantity, 0) + (frete || 0);
-      
-        // Verifique se o pagamento é via Pix
-        if (paymentMethod === 'pix') {
-          const pixPayload = {
-            correlationID: 'myCorrelationID',
-            value: total * 100, // Valor total em centavos
-            comment: 'Pagamento da compra',
-          };
-      
-          try {
-            const response = await axios.post('https://api.openpix.com.br/api/v1/charge', pixPayload, {
-              headers: {
-                'Authorization': 'Q2xpZW50X0lkXzgwMWRmMzgwLWRjOWItNDEzOS04YzRmLTAxNWFkNDA2MGNhZjpDbGllbnRfU2VjcmV0XzJ3c1VXa1Z6OFZ0UnJjb1orcjR3eUZtcUtpUHV4VDNVMGlhcEhpdGs5NmM9', // Insira seu token aqui
-                'Content-Type': 'application/json',
-              },
-            });
-      
-            const charge = response.data;
-            setPixPaymentUrl(charge.qrCode); // Armazena a URL do QR Code
-            toast.success('QR Code gerado com sucesso!');
-          } catch (error) {
-            console.error('Erro ao criar a cobrança Pix:', error);
-            toast.error('Erro ao gerar QR Code. Tente novamente.');
+    if (!cart || cart.length === 0) {
+      toast.error('Seu carrinho está vazio.');
+      setLoadingButton(false);
+      return;
+    }
+
+    if (paymentMethod === 'pix') {
+      await handlePixPayment(total);
+    } else {
+      await handleCreditCardPayment(total);
+    }
+
+    setLoadingButton(false);
+  };
+
+  const calculateTotal = () => {
+    return cart.reduce((acc, curr) => acc + curr.price * curr.quantity, 0) + (frete || 0);
+  };
+
+  const handleCreditCardPayment = async (total) => {
+    const paymentData = {
+      items: cart.map(product => ({
+        amount: product.price * 100,
+        description: product.name,
+        quantity: product.quantity,
+        code: "CAMISETACODE"
+      })),
+      customer: {
+        name: cardName,
+        email: email,
+        document: cpfOrCnpj.replace(/\D/g, ""),
+        type: personType,
+        phones: {
+          home_phone: {
+            country_code: "55",
+            area_code: phone.substring(1, 3),
+            number: phone.replace(/\D/g, '')
           }
-        } else {
-        // Caso de pagamento por cartão de crédito
-        const paymentData = {
-          items: cart.map(product => ({
-            amount: product.price * 100,
-            description: product.name,
-            quantity: product.quantity,
-            code: "CAMISETACODE"
-          })),
-          customer: {
-            name: cardName,
-            email: email,
-            document: cpfOrCnpj.replace(/\D/g, ""),
-            type: personType,
-            phones: {
-              home_phone: {
-                country_code: "55",
-                area_code: phone.substring(1, 3),
-                number: phone.replace(/\D/g, '')
-              }
-            }
-          },
-          payments: [{
-            payment_method: "credit_card",
-            credit_card: {
-              installments: parseInt(installments),
-              statement_descriptor: "LJJESUSTYLE",
-              card: {
-                number: cardNumber.replace(/\D/g, ''),
-                holder_name: cardName,
-                exp_month: parseInt(expiryDate.substring(0, 2)),
-                exp_year: parseInt(expiryDate.substring(3, 5)) + 2000,
-                cvv: cvv,
-                billing_address: {
-                  line_1: `${street}`,
-                  zip_code: cep.replace(/\D/g, ''),
-                  city: addressData.localidade,
-                  state: addressData.uf,
-                  country: "BR"
-                }
-              }
-            }
-          }]
-        };
-
-        try {
-          const response = await axios.post('/core/v5/orders', paymentData, {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Basic Seu_Token_Aqui' // Insira seu token aqui
-            }
-          });
-
-          if (response.data.status !== 'paid') {
-            const errorMessages = response.data.errors?.payments.map(err => err[0]).join(', ') || 'Erro ao processar pagamento. Tente novamente.';
-            toast.error(errorMessages);
-            return;
-          }
-
-          setIsOpenModalSuccess(true);
-          await new Promise(resolve => setTimeout(resolve, 4000));
-          localStorage.removeItem("cart");
-          navigate('/products');
-
-        } catch (error) {
-          console.error('Erro ao processar pagamento:', error.response ? error.response.data : error.message);
-          toast.error('Erro ao processar pagamento. Tente novamente mais tarde.');
         }
+      },
+      payments: [{
+        payment_method: "credit_card",
+        credit_card: {
+          installments: parseInt(installments),
+          statement_descriptor: "LJJESUSTYLE",
+          card: {
+            number: cardNumber.replace(/\D/g, ''),
+            holder_name: cardName,
+            exp_month: parseInt(expiryDate.substring(0, 2)),
+            exp_year: parseInt(expiryDate.substring(3, 5)) + 2000,
+            cvv: cvv,
+            billing_address: {
+              line_1: `${street}`,
+              zip_code: cep.replace(/\D/g, ''),
+              city: '', // Você precisa fornecer a cidade
+              state: '', // Você precisa fornecer o estado
+              country: "BR"
+            }
+          }
+        }
+      }]
+    };
+
+    try {
+      const response = await axios.post('/core/v5/orders', paymentData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'sk_test_4e27008e14c24164bad6e7fdbfdd9dee'
+        }
+      });
+
+      if (response.data.status !== 'paid') {
+        const errorMessages = response.data.errors?.payments.map(err => err[0]).join(', ') || 'Erro ao processar pagamento. Tente novamente.';
+        toast.error(errorMessages);
+        return;
       }
 
-      setLoadingButton(false);
+      setIsOpenModalSuccess(true);
+      await new Promise(resolve => setTimeout(resolve, 4000));
+      localStorage.removeItem("cart");
+      // navigate('/products'); // Descomente se estiver usando react-router
+
+    } catch (error) {
+      console.error('Erro ao processar pagamento:', error.response ? error.response.data : error.message);
+      toast.error('Erro ao processar pagamento. Tente novamente mais tarde.');
+    }
+  };
+  const handlePixPayment = async (total) => {
+    const correlationID = `ID_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const pixPayload = {
+      correlationID,
+      value: total * 100,
+      comment: 'Pagamento da compra',
     };
-  }
+
+    try {
+      const response = await axios.post('https://api.openpix.com.br/api/v1/charge', pixPayload, {
+        headers: {
+          'Authorization': 'Q2xpZW50X0lkXzgwMWRmMzgwLWRjOWItNDEzOS04YzRmLTAxNWFkNDA2MGNhZjpDbGllbnRfU2VjcmV0X1BEYU55S2ZGbklhVEZ1dGVraEZEUjJlNFBMWlRlZjF1Vmc0b1EwUTNyOEU9',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const charge = response.data.charge;
+      setQrCodeImage(charge.qrCodeImage); // Atualiza o estado com a URL do QR Code
+      setPixPaymentUrl(charge.paymentLinkUrl); // Se necessário, mantenha a URL de pagamento
+      toast.success('QR Code gerado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao criar a cobrança Pix:', error);
+      toast.error('Erro ao gerar QR Code. Tente novamente.');
+    }
+  };
+
+
+
   return (
     <>
       <Header />
@@ -415,35 +423,33 @@ const Payment = () => {
           <section className='checkout-section'>
             <h1>Finalizar compra</h1>
             <form className='payment-form'>
-              {/* Campos do formulário */}
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '48%' }}>
                 <label htmlFor="cardName">Nome no cartão:</label>
-                <input type="text" id="cardName" maxLength="19" placeholder="Nome no cartão" value={cardName} onChange={handleCardNameChange} />
+                <input type="text" id="cardName" maxLength="19" placeholder="Nome no cartão" value={cardName} onChange={(e) => setCardName(e.target.value)} />
               </div>
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '50%' }}>
                 <label htmlFor="cardNumber">Número do Cartão:</label>
-                <input type="text" id="cardNumber" placeholder="Número do Cartão" value={cardNumber} onChange={handleCardNumberChange} />
+                <input type="text" id="cardNumber" placeholder="Número do Cartão" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} />
               </div>
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '32%' }}>
                 <label htmlFor="expiryDate">Data de Validade:</label>
-                <input type="text" id="expiryDate" placeholder="MM/AA" maxLength="5" value={expiryDate} onChange={handleExpiryDateChange} />
+                <input type="text" id="expiryDate" placeholder="MM/AA" maxLength="5" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} />
               </div>
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '32%' }}>
                 <label htmlFor="cvv">CVV:</label>
-                <input type="text" id="cvv" maxLength="4" placeholder="CVV" value={cvv} onChange={handleCvvChange} />
+                <input type="text" id="cvv" maxLength="4" placeholder="CVV" value={cvv} onChange={(e) => setCvv(e.target.value)} />
               </div>
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '32%' }}>
                 <label htmlFor="installments">Número de parcelas:</label>
-                <select id="installments" value={installments} onChange={handleInstallmentsChange}>
+                <select id="installments" value={installments} onChange={(e) => setInstallments(e.target.value)}>
                   {Array.from({ length: 10 }, (_, index) => index + 1).map((num) => (
                     <option key={num}>{num} X de R${(total / num).toFixed(2).replace('.', ',')}</option>
                   ))}
                 </select>
               </div>
 
-              {/* Dados complementares */}
               <section className='additional-details'>
-                <h5><BsFillPersonPlusFill />Dados complementares</h5>
+                <h5><BsFillPersonPlusFill /> Dados complementares</h5>
               </section>
               <div style={{ width: window.innerWidth <= 480 ? '100%' : '48%' }}>
                 <label>Tipo de Pessoa:</label>
@@ -511,29 +517,33 @@ const Payment = () => {
             </div>
             <button
               type='button'
-              onClick={handlePayment}
+              onClick={handleCreditCardPayment}
               disabled={loadingButton}
+              className="spacing"
             >
               {loadingButton ? <Spinner className="spinner-button" speed='0.70s' /> : 'Finalizar Compra'}
             </button>
-              
 
-            
-            <button 
+            <h1 style={{ marginBottom: '16px' }}>OpenPix </h1>  <h6>Gerar QR Code</h6>
+
+            <button
               type="button"
               onClick={() => {
-                setPaymentMethod('pix'); // Define o método de pagamento como Pix
-                handlePayment('charge'); // Chama a função para gerar o QR Code
+                if (pixPaymentUrl) {
+                  window.open(pixPaymentUrl, "_blank");
+                } else {
+                  setPaymentMethod('pix');
+                  handlePixPayment(total); // Gera o QR Code com o total
+                }
               }}
               disabled={loadingButton}
+              className="spacing"
             >
-              Pagar com Pix - Gerar QR Code
+              {pixPaymentUrl ? 'Ver QR Code' : 'Pagar com Pix - Gerar QR Code'}
             </button>
 
 
-            {pixPaymentUrl && (
-              <a href={pixPaymentUrl} target="_blank" rel="noopener noreferrer">Ver QR Code</a>
-            )}
+
           </section>
         </div>
       </main>
